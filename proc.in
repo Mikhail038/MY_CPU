@@ -1,0 +1,10 @@
+push 80
+push 70
+mul
+push 140
+push 100
+sub
+div
+out
+hlt
+
