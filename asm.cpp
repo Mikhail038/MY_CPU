@@ -11,6 +11,9 @@
 
 static int ROUND = 1;
 
+//DO NOT BEGIN LABELS AFTER EMPTY POP WITH LETTER R
+
+//RAEGISTER 32 MEMORY 128
 enum ECommandNums
 {
     push = 1,
@@ -285,9 +288,11 @@ int close_listing_file (StructMachineCode* Code)
 
     fprintf (Code->listing_file,
              "---------------------------------------------------------------\n"
+             "sygnature '%0.2x' version %0.2x (%d) size %0.2x (%d)\n"
+             "---------------------------------------------------------------\n"
              "Compilation ended: %s %s\n"
              "===============================================================\n"
-            , __DATE__, __TIME__);
+            ,Code->sygnature, Code->version, Code->version, Code->size, Code->size, __DATE__, __TIME__);
 
     fclose (Code->listing_file);
     return 0;
@@ -447,9 +452,16 @@ int parse (StructSource* Source, StructMachineCode* Code)
                 Source->pointer += i;
                 Code->top_number++;
 
-                if ((ArrCommands[j].num == push) || (ArrCommands[j].num == push))
+                if (ArrCommands[j].num == push)
                 {
-                    if (parse_push_or_pop (Source, Code) != 0)
+                    if (parse_push_or_pop (Source, Code, "push") != 0)
+                    {
+                        return -1;
+                    }
+                }
+                else if (ArrCommands[j].num == pop)
+                {
+                    if (parse_push_or_pop (Source, Code, "pop") != 0)
                     {
                         return -1;
                     }
@@ -473,7 +485,7 @@ int parse (StructSource* Source, StructMachineCode* Code)
 
 }
 
-int parse_push_or_pop (StructSource* Source, StructMachineCode* Code)
+int parse_push_or_pop (StructSource* Source, StructMachineCode* Code, const char* Command)
 {
     seek (Source);
 
@@ -489,18 +501,36 @@ int parse_push_or_pop (StructSource* Source, StructMachineCode* Code)
         }
     }
 
-    if (Name[0] == 'r')
+    if (Name[0] == '[')
     {
-        parse_str (Source, Code);
+        parse_op (Source, Code, Command);
     }
-    else if ((Name[0] <= '9') && ((Name[0] >= '1')))
+    else if (Name[0] == 'r')
     {
-        parse_double (Source, Code);
+        parse_str (Source, Code, Command);
+    }
+    else if ((Command = "push") && (Name[0] <= '9') && ((Name[0] >= '1')))
+    {
+        parse_double (Source, Code, Command);
     }
     else
     {
-        printf ("hui\n");
-        return -1;
+        if (Command = "pop")
+        {
+            //Source->pointer++;
+            printf ("!'%s'\n", Name);
+            print_command (Code, Command);
+
+            return 0;
+        }
+        else
+        {
+            printf ("hui\n");
+            abort ();
+
+            return -1;
+        }
+
     }
 
     return 0;
@@ -541,24 +571,30 @@ int parse_jump (StructSource* Source, StructMachineCode* Code)
     return -1;
 }
 
-void parse_double (StructSource* Source, StructMachineCode* Code)
+void parse_int (StructSource* Source, StructMachineCode* Code,  const char* Command)
 {
     //fprintf (Code->listing_file, "%0.4d %0.2x %s\n", Code->top_number - 1, Code->ArrCode[Code->top_number - 1], "push");
-    print_command (Code, "push");
+    print_command (Code, Command);
 
     char* Name = &(Source->Buffer[Source->pointer]);
 
+
     int length = strlen (Name);
 
-    double d_argument = strtod (Name, NULL);
+    int i_argument = 0;
+    sscanf (Name, "%d", &i_argument);
+
 
     int j = 0;
-    for ( ;j < sizeof (double); j++)
+    for ( ;j < sizeof (int); j++)
     {
-        Code->ArrCode[Code->top_number + j] = ((unsigned char*) &d_argument)[j];
+        //printf ("%x", ((unsigned char*) &d_argument)[j]);
+        Code->ArrCode[Code->top_number] = ((unsigned char*) &i_argument)[j];
         print_element (Code);
         Code->top_number++;
     }
+
+    //printf ("'%s' %d %d\n", Name, length, i_argument);
 
     Source->pointer += length;
 
@@ -567,11 +603,42 @@ void parse_double (StructSource* Source, StructMachineCode* Code)
     return;
 }
 
-void parse_str (StructSource* Source, StructMachineCode* Code)
+void parse_double (StructSource* Source, StructMachineCode* Code,  const char* Command)
+{
+    //fprintf (Code->listing_file, "%0.4d %0.2x %s\n", Code->top_number - 1, Code->ArrCode[Code->top_number - 1], "push");
+    print_command (Code, Command);
+
+    char* Name = &(Source->Buffer[Source->pointer]);
+
+
+    int length = strlen (Name);
+
+    double d_argument = strtod (Name, NULL);
+
+
+    int j = 0;
+    for ( ;j < sizeof (double); j++)
+    {
+        //printf ("%x", ((unsigned char*) &d_argument)[j]);
+        Code->ArrCode[Code->top_number] = ((unsigned char*) &d_argument)[j];
+        print_element (Code);
+        Code->top_number++;
+    }
+
+    //printf (" %s %lg\n", Name, d_argument);
+
+    Source->pointer += length;
+
+    //printf ("(%s) pointer %d\n", Name, *pointer);
+
+    return;
+}
+
+void parse_str (StructSource* Source, StructMachineCode* Code, const char* Command)
 {
     Code->ArrCode[Code->top_number - 1] = (unsigned char)((int) Code->ArrCode[Code->top_number - 1] + 32);
 
-    print_command (Code, "push");
+    print_command (Code, Command);
 
     char* Name = &(Source->Buffer[Source->pointer]);
 
@@ -598,14 +665,39 @@ void parse_str (StructSource* Source, StructMachineCode* Code)
 
     //printf ("(%s) pointer %d\n", Name, *pointer);
 
-    Code->top_number++;
-
     return;
 }
 
-void parse_op (StructSource* Source, StructMachineCode* Code)
+void parse_op (StructSource* Source, StructMachineCode* Code, const char* Command)
 {
-    Code->ArrCode[Code->top_number - 1] = (unsigned char)((int) Code->ArrCode[Code->top_number - 1] + 32);
+    Code->ArrCode[Code->top_number - 1] = (unsigned char)((int) Code->ArrCode[Code->top_number - 1] + 128);
+
+    //print_command (Code, Command);
+    Source->pointer++;
+
+    char* Name = &(Source->Buffer[Source->pointer]);
+
+    int length = strlen (Name);
+
+    if (Name[length- 1] == ']')
+    {
+        Name[length - 1] = '\0';
+    }
+
+    if (Name[0] == 'r')
+    {
+        parse_str (Source, Code, Command);
+    }
+    else if ((Name[0] <= '9') && ((Name[0] >= '1')))
+    {
+        parse_int (Source, Code, Command);
+    }
+    else
+    {
+        printf ("op pzdc\n");
+        return;
+    }
+
 }
 
 void jump_int (StructSource* Source,StructMachineCode* Code)
@@ -662,7 +754,7 @@ void jump_label (StructSource* Source,StructMachineCode* Code)
         if (ROUND < 2)
         {
             //printf ("Warning!\n");
-            fprintf (Code->listing_file, "skipped %d bytes (label not found)\n", sizeof (int));
+            fprintf (Code->listing_file, "skipped %d bytes (label '%s' not found)\n", sizeof (int), Name);
             Code->top_number += sizeof (int);
         }
         else

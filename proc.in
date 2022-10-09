@@ -2,7 +2,10 @@
 zero:
 push rax ; ads
 push 80
+push [80]
+pop rcx
 first:
+pop [16]
 push 70
 second:
 mul
