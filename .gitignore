@@ -1,2 +1,6 @@
 *.o
 *asm
+*proc
+*MYmakefile.cpp
+*m_stack.cpp
+*O/cospect.txt

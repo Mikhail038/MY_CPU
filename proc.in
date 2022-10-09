@@ -1,10 +1,21 @@
+;Zdarova ; pishy cod i mne pofig; ;;;
+zero:
+push rax ; ads
 push 80
+first:
 push 70
+second:
 mul
+jump fourth
+third:
 push 140
+jump third
 push 100
+jump 255
 sub
 div
+fourth:
 out
 hlt
+;vsem poka
 

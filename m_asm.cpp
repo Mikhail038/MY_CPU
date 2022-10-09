@@ -6,58 +6,70 @@
 
 int main (int argc, char** argv)
 {
-    FILE* Source = argc > 1 ? fopen (argv[1], "r") : fopen ("proc.in", "r");
-    MCA (Source != NULL, 1);
+    FILE* SourceFile = argc > 1 ? fopen (argv[1], "r") : fopen ("proc.in", "r");
+    MCA (SourceFile != NULL, 1);
 
-    int AmntLines = count_lines_in_file (Source);
-    int AmntSymbols = 1 + count_symbols_in_file (Source);
-    int MaxSize = 3 * AmntLines;
+    StructSource Source = {};
 
-    MCA (AmntSymbols >= 0, 1);
-    char* Buffer = (char*) calloc (AmntSymbols, sizeof (*Buffer));
-    MCA (Buffer != NULL, 0);
+    int Amnt_lines = count_lines_in_file (SourceFile);
+    Source.amnt_symbols = 1 + count_symbols_in_file (SourceFile);
+    int MaxSize = Amnt_lines + Amnt_lines * 2 * sizeof (double);
 
-    fread (Buffer, sizeof (*Buffer), AmntSymbols, Source);
-    Buffer[AmntSymbols - 1] = '\0';
+    MCA (Amnt_lines >= 0, 1);
+    Source.Buffer = (char*) calloc (Source.amnt_symbols, sizeof (*Source.Buffer));
+    MCA (Source.Buffer != NULL, 0);
 
-    fclose (Source);
+    fread (Source.Buffer, sizeof (*Source.Buffer), Source.amnt_symbols, SourceFile);
+    Source.Buffer[Source.amnt_symbols - 1] = '\0';
 
-    printf ("+%s+\n", Buffer);
-    printf ("AmntSymbols %d AmntLines %d\n", AmntSymbols, AmntLines);
+    fclose (SourceFile);
 
+    //printf ("+%s+\n", Source.Buffer);
+    printf ("AmntSymbols %d AmntLines %d\n", Source.amnt_symbols, Amnt_lines);
 
-    int* ArrCode = (int*) calloc (MaxSize, sizeof (*ArrCode));
+    StructMachineCode Code = {};
 
-    int ArrNumber = 0;
+    Code.ArrCode = (unsigned char*) calloc (1, MaxSize);
 
-    make_array_of_code ((char*) Buffer, ArrCode, AmntSymbols, AmntLines);
+    Code.top_number = 0;
 
+    make_array_of_code (Amnt_lines, &Source, &Code);
+/*
     //print array of code============================================
     for (int i = 0; i < MaxSize; i++)
     {
-        if (ArrCode[i] != 0) 
-        {
-            printf ("%d\n", ArrCode[i]);
+        printf ("%0.2x ", Code.ArrCode[i]);
 
-            for (int j = 0; j < sizeof (*ArrCode); j++)
-            {
-                printf ("%0.2x ", ((unsigned char*)&(ArrCode[i]))[j]);
-            }
+    //    if (i % 4 == 3)
+    //    {
+    //         printf ("\n");
+    //    }
+       //if
+        // if (ArrCode[i] != 0)
+        // {
+        //     printf ("%d\n", ArrCode[i]);
 
-            printf ("\n");
-        }
+        //     for (int j = 0; j < sizeof (*ArrCode); j++)
+        //     {
+        //         printf ("%0.2x ", ((unsigned char*)&(ArrCode[i]))[j]);
+        //     }
+
+        //     printf ("\n");
+        // }
     }
     //===============================================================
+*/
+    free (Source.Buffer);
 
-    free (Buffer);
 
-    // FILE* Bin = argc > 2 ? fopen (argv[2], "wb") : fopen ("proc.out", "wb");
+    FILE* Bin = argc > 2 ? fopen (argv[2], "wb") : fopen ("proc.out", "wb");
 
+    make_bin_file (Bin, &Code);
     //fwrite (ArrCode, sizeof (int), MaxSize, Bin);
 
-    // fclose (Bin);
+    fclose (Bin);
 
-    free (ArrCode);
+    free (Code.ArrCode);
 
     return 0;
 }
