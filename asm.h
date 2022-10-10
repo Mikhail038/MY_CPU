@@ -1,7 +1,23 @@
 #ifndef ASM_H
 #define ASM_H
 
-#define AmntCommands 12
+#define AmntCommands 15
+
+enum ECommandNums
+{
+    push = 1,
+    pop  = 2,
+    add  = 3,
+    sub  = 4,
+    mul  = 5,
+    dvd  = 6,
+    inp  = 7,
+    out  = 8,
+    dump = 9,
+    dup  = 10,
+    jump = 11,
+    hlt  = 0
+};
 
 typedef struct
 {
@@ -13,11 +29,11 @@ typedef struct
 
 typedef struct
 {
-    int            top_number;
+    int            ip;
     unsigned char* ArrCode;
     unsigned char  sygnature;
     unsigned char  version;
-    unsigned char  size;
+    int            size;
     FILE*          listing_file;
 } StructMachineCode;
 
@@ -68,6 +84,8 @@ void print_element (StructMachineCode* Code);
 
 void make_bin_file (FILE* Bin, StructMachineCode* Code);
 
+
+int clear_comments (char* Name);
 
 void free_labels (StructMachineCode* Code);
 

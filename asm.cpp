@@ -14,21 +14,7 @@ static int ROUND = 1;
 //DO NOT BEGIN LABELS AFTER EMPTY POP WITH LETTER R
 
 //RAEGISTER 32 MEMORY 128
-enum ECommandNums
-{
-    push = 1,
-    pop  = 2,
-    add  = 3,
-    sub  = 4,
-    mul  = 5,
-    dvd  = 6,
-    inp  = 7,
-    out  = 8,
-    dump = 9,
-    dup  = 10,
-    jump = 11,
-    hlt  = 0
-};
+
 
 enum ERegisterNums
 {
@@ -149,123 +135,6 @@ void separate_buffer_on_lines (char** ArrLinePtrs, const char* Buffer, int AmntS
     return;
 }
 
-/*
-int make_array_of_code (char** ArrLinePtrs, int AmntLines, int* ArrCode, int* ArrNumber)
-{
-    //printf ("'%20s'\n", ArrLinePtrs);
-
-    for (int i = 0; i < AmntLines - 1; i++)
-    {
-        make_command_from_line (ArrLinePtrs[i], ArrCode, ArrNumber);
-    }
-
-    return 0;
-}
-
-void make_command_from_line (char* Line, int* ArrCode, int* ArrNumber)
-{
-    MCA (Line != NULL, (void) 0);
-
-    //int OldNumber = *ArrNumber;
-    int Length = strlen (Line);
-    int c = 0;
-
-    for (int i = 0; i < Length; i++)
-    {
-        if (Line[i] != ' ')
-        {
-            c = parse (&(Line[i]), &i, ArrCode, ArrNumber);
-            printf ("'%d'\n", c);
-            MCA (c >= 0, (void) 0);
-            ArrNumber++;
-
-            if (c > 0)
-            {
-                parse_arguments (c, &(Line[i]), &i, ArrCode, ArrNumber);
-            }
-
-            break;
-        }
-    }
-
-    //printf ("--%d\n", *ArrNumber);// - OldNumber));//(*ArrNumber - OldNumber);
-
-    return;
-}
-
-int parse (char* Name, int* Cursor, int* ArrCode, int* ArrNumber)
-{
-    //printf ("-%s- %d\n", Name, *Cursor);
-
-    int i = 0;
-    for (; i < 100 ; i++)
-    {
-        if ((Name[i] == ' ') || (Name[i] == '\0'))
-        {
-            Name[i] = '\0';
-            break;
-        }
-    }
-
-    for (int j = 0; j < AmntCommands; j++)
-    {
-
-        if (strcmp (&(Name[*Cursor]), ArrCommands[j].name) == 0)
-        {
-            ArrCode[*ArrNumber] = ArrCommands[j].num;
-            printf ("%s %d\n", ArrCommands[j].name, ArrCommands[j].num);
-
-            (*ArrNumber) += 1;
-            //printf ("Number %d\n", *ArrNumber);
-            *Cursor += i;
-            printf ("cursor %d\n", *Cursor);
-
-            return ArrCommands[j].args;
-        }
-    }
-
-    *Cursor += i;
-
-    return -1;
-}
-void parse_arguments (int AmntArgs, char* Name, int* Cursor, int* ArrCode, int* ArrNumber)
-{
-    //printf ("%d --%c--\n", *Cursor, Name[*Cursor]);
-
-    // for (int i = 0; i < 5; i++)
-    // {
-    //     printf ("'%c'", Name[i]);
-    // }
-    // printf ("\n");
-    int a = 0;
-
-    for (int i = *Cursor; ; i++)
-    {
-        if (Name[i] != ' ')
-        {
-            sscanf (&(Name[i]), "%d", &a);
-            printf ("a %d\n", a);
-            break;
-        }
-    }
-
-    int i = 0;
-    for (; ; i++)
-    {
-        if ((Name[i] == ' ') || (Name[i] == '\n'))
-        {
-            Name[i] = '\0';
-            break;
-        }
-    }
-    *Cursor += i;
-
-
-
-    return;
-}
-*/
-
 int open_listing_file (const char* Filename, StructMachineCode* Code)
 {
     Code->listing_file = fopen (Filename, "w");
@@ -288,19 +157,24 @@ int close_listing_file (StructMachineCode* Code)
 
     fprintf (Code->listing_file,
              "---------------------------------------------------------------\n"
-             "sygnature '%0.2x' version %0.2x (%d) size %0.2x (%d)\n"
+             "sygnature '%0.2x' version %0.2x (%d) size %0.2x %0.2x %0.2x %0.2x  (%d)\n"
              "---------------------------------------------------------------\n"
              "Compilation ended: %s %s\n"
              "===============================================================\n"
-            ,Code->sygnature, Code->version, Code->version, Code->size, Code->size, __DATE__, __TIME__);
+            ,Code->sygnature, Code->version, Code->version,
+            ((unsigned char*) &Code->size)[0], ((unsigned char*) &Code->size)[1],
+            ((unsigned char*) &Code->size)[2], ((unsigned char*) &Code->size)[3], Code->size,
+             __DATE__, __TIME__);
 
     fclose (Code->listing_file);
     return 0;
 }
 
+
+
 void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode* Code)
 {
-    Code->top_number = 0;
+    Code->ip = 0;
     Source->pointer  = 0;
     Source->amnt_lines = Amnt_lines;
 
@@ -309,7 +183,7 @@ void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode
         open_listing_file ("proc.log", Code);
     }
 
-    for (int LineNum = 0; LineNum < Source->amnt_lines; LineNum++)
+    for (int LineNum = 0; LineNum < Source->amnt_lines * 2; LineNum++)
     {
         if (seek (Source) == 0)
         {
@@ -322,7 +196,7 @@ void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode
 
     Code->sygnature = 218;
     Code->version   = 1;
-    Code->size      = Code->top_number;
+    Code->size      = Code->ip;
 
     fprintf (Code->listing_file,"---------------------------------------------------------------\n"
                                 "Round %d ended\n"
@@ -395,13 +269,13 @@ int add_label (char* Name, StructMachineCode* Code)
             ArrLabels[i].name = (char*) calloc (Length + 1, sizeof (char));
             ArrLabels[i].name = strcpy (ArrLabels[i].name, Name);
             (ArrLabels[i].name)[Length - 1] = '\0';
-            ArrLabels[i].num  = Code->top_number;
+            ArrLabels[i].num  = Code->ip;
 
-            fprintf (Code->listing_file, "added label: %s %d  %0.2x %0.2x %0.2x %0.2x\n", Name, Code->top_number,
-            ((unsigned char*) &Code->top_number)[0],
-            ((unsigned char*) &Code->top_number)[1],
-            ((unsigned char*) &Code->top_number)[2],
-            ((unsigned char*) &Code->top_number)[3]
+            fprintf (Code->listing_file, "added label: %s %d  %0.2x %0.2x %0.2x %0.2x\n", Name, Code->ip,
+            ((unsigned char*) &Code->ip)[0],
+            ((unsigned char*) &Code->ip)[1],
+            ((unsigned char*) &Code->ip)[2],
+            ((unsigned char*) &Code->ip)[3]
             );
 
             return 0;
@@ -410,6 +284,9 @@ int add_label (char* Name, StructMachineCode* Code)
 
     return 1;
 }
+
+
+
 
 int parse (StructSource* Source, StructMachineCode* Code)
 {
@@ -447,10 +324,10 @@ int parse (StructSource* Source, StructMachineCode* Code)
             {
                 unsigned char symbol = ArrCommands[j].num;
 
-                Code->ArrCode[Code->top_number] = symbol;
+                Code->ArrCode[Code->ip] = symbol;
 
                 Source->pointer += i;
-                Code->top_number++;
+                Code->ip++;
 
                 if (ArrCommands[j].num == push)
                 {
@@ -475,7 +352,7 @@ int parse (StructSource* Source, StructMachineCode* Code)
                 }
                 else
                 {
-                    fprintf (Code->listing_file, "    %0.4d %0.2x %s\n", Code->top_number - 1, Code->ArrCode[Code->top_number - 1], ArrCommands[j].name);
+                    fprintf (Code->listing_file, "    %0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], ArrCommands[j].name);
                 }
 
                 return ArrCommands[j].args;
@@ -484,6 +361,8 @@ int parse (StructSource* Source, StructMachineCode* Code)
     }
 
 }
+
+
 
 int parse_push_or_pop (StructSource* Source, StructMachineCode* Code, const char* Command)
 {
@@ -573,7 +452,7 @@ int parse_jump (StructSource* Source, StructMachineCode* Code)
 
 void parse_int (StructSource* Source, StructMachineCode* Code,  const char* Command)
 {
-    //fprintf (Code->listing_file, "%0.4d %0.2x %s\n", Code->top_number - 1, Code->ArrCode[Code->top_number - 1], "push");
+    //fprintf (Code->listing_file, "%0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], "push");
     print_command (Code, Command);
 
     char* Name = &(Source->Buffer[Source->pointer]);
@@ -589,9 +468,9 @@ void parse_int (StructSource* Source, StructMachineCode* Code,  const char* Comm
     for ( ;j < sizeof (int); j++)
     {
         //printf ("%x", ((unsigned char*) &d_argument)[j]);
-        Code->ArrCode[Code->top_number] = ((unsigned char*) &i_argument)[j];
+        Code->ArrCode[Code->ip] = ((unsigned char*) &i_argument)[j];
         print_element (Code);
-        Code->top_number++;
+        Code->ip++;
     }
 
     //printf ("'%s' %d %d\n", Name, length, i_argument);
@@ -605,7 +484,7 @@ void parse_int (StructSource* Source, StructMachineCode* Code,  const char* Comm
 
 void parse_double (StructSource* Source, StructMachineCode* Code,  const char* Command)
 {
-    //fprintf (Code->listing_file, "%0.4d %0.2x %s\n", Code->top_number - 1, Code->ArrCode[Code->top_number - 1], "push");
+    //fprintf (Code->listing_file, "%0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], "push");
     print_command (Code, Command);
 
     char* Name = &(Source->Buffer[Source->pointer]);
@@ -620,9 +499,9 @@ void parse_double (StructSource* Source, StructMachineCode* Code,  const char* C
     for ( ;j < sizeof (double); j++)
     {
         //printf ("%x", ((unsigned char*) &d_argument)[j]);
-        Code->ArrCode[Code->top_number] = ((unsigned char*) &d_argument)[j];
+        Code->ArrCode[Code->ip] = ((unsigned char*) &d_argument)[j];
         print_element (Code);
-        Code->top_number++;
+        Code->ip++;
     }
 
     //printf (" %s %lg\n", Name, d_argument);
@@ -636,30 +515,45 @@ void parse_double (StructSource* Source, StructMachineCode* Code,  const char* C
 
 void parse_str (StructSource* Source, StructMachineCode* Code, const char* Command)
 {
-    Code->ArrCode[Code->top_number - 1] = (unsigned char)((int) Code->ArrCode[Code->top_number - 1] + 32);
+    Code->ArrCode[Code->ip - 1] = (unsigned char)((int) Code->ArrCode[Code->ip - 1] + 32);
 
     print_command (Code, Command);
 
     char* Name = &(Source->Buffer[Source->pointer]);
 
+
     int length = strlen (Name);
+
+    clear_comments (Name);
+
+    for (int i = 0; i < length; i++)
+    {
+        if (Name[i] == ' ')
+        {
+            Name[i] = '\0';
+        }
+    }
+
+    //printf ("!%s!\n", Name);
 
     int j = 0;
     for ( ; j < 4; j++)
     {
         if (strcmp (Name, ArrRegisters[j].name) == 0)
         {
-            Code->ArrCode[Code->top_number] = (unsigned char) ArrRegisters[j].num;
+            Code->ArrCode[Code->ip] = (unsigned char) ArrRegisters[j].num;
             print_element (Code);
-            Code->top_number++;
+            Code->ip++;
         }
 
         // if (Name[j] != '\0')
         // {
-        //     Code->ArrCode[Code->top_number + j] = (unsigned char) ((Name)[j]);
-        //     fprintf (Code->listing_file, "%0.4d %0.2x \n", Code->top_number + j, (unsigned char) ((Name)[j]));
+        //     Code->ArrCode[Code->ip + j] = (unsigned char) ((Name)[j]);
+        //     fprintf (Code->listing_file, "%0.4d %0.2x \n", Code->ip + j, (unsigned char) ((Name)[j]));
         // }
     }
+
+    //skip_line (Source);
 
     Source->pointer += length;
 
@@ -670,19 +564,17 @@ void parse_str (StructSource* Source, StructMachineCode* Code, const char* Comma
 
 void parse_op (StructSource* Source, StructMachineCode* Code, const char* Command)
 {
-    Code->ArrCode[Code->top_number - 1] = (unsigned char)((int) Code->ArrCode[Code->top_number - 1] + 128);
+    Code->ArrCode[Code->ip - 1] = (unsigned char)((int) Code->ArrCode[Code->ip - 1] + 128);
 
     //print_command (Code, Command);
     Source->pointer++;
 
     char* Name = &(Source->Buffer[Source->pointer]);
 
-    int length = strlen (Name);
+    //clear_comments (Name);
 
-    if (Name[length- 1] == ']')
-    {
-        Name[length - 1] = '\0';
-    }
+
+    int length = strlen (Name);
 
     if (Name[0] == 'r')
     {
@@ -694,11 +586,13 @@ void parse_op (StructSource* Source, StructMachineCode* Code, const char* Comman
     }
     else
     {
-        printf ("op pzdc\n");
+        printf ("2 op pzdc\n");
         return;
     }
 
 }
+
+
 
 void jump_int (StructSource* Source,StructMachineCode* Code)
 {
@@ -714,9 +608,9 @@ void jump_int (StructSource* Source,StructMachineCode* Code)
 
     for (int j = 0; j < sizeof (int); j++)
     {
-        Code->ArrCode[Code->top_number] = ((unsigned char*) &(ip))[j];
+        Code->ArrCode[Code->ip] = ((unsigned char*) &(ip))[j];
         print_element (Code);
-        Code->top_number++;
+        Code->ip++;
     }
 
     Source->pointer += length;
@@ -729,7 +623,7 @@ void jump_label (StructSource* Source,StructMachineCode* Code)
     char* Name = &(Source->Buffer[Source->pointer]);
 
     //printf ("%d %s\n", ROUND, Name);
-    int old_number = Code->top_number;
+    int old_number = Code->ip;
 
     int length = strlen (Name);
 
@@ -742,20 +636,20 @@ void jump_label (StructSource* Source,StructMachineCode* Code)
         {
             for (int j = 0; j < sizeof (int); j++)
             {
-                Code->ArrCode[Code->top_number] = ((unsigned char*) &(ArrLabels[i].num))[j];
+                Code->ArrCode[Code->ip] = ((unsigned char*) &(ArrLabels[i].num))[j];
                 print_element (Code);
-                Code->top_number++;
+                Code->ip++;
             }
         }
     }
 
-    if (old_number == Code->top_number)
+    if (old_number == Code->ip)
     {
         if (ROUND < 2)
         {
             //printf ("Warning!\n");
             fprintf (Code->listing_file, "skipped %d bytes (label '%s' not found)\n", sizeof (int), Name);
-            Code->top_number += sizeof (int);
+            Code->ip += sizeof (int);
         }
         else
         {
@@ -766,16 +660,20 @@ void jump_label (StructSource* Source,StructMachineCode* Code)
     Source->pointer += length;
 }
 
+
+
 void print_command (StructMachineCode* Code, const char* Name)
 {
-    fprintf (Code->listing_file, "    %0.4d %0.2x %s\n", Code->top_number - 1, Code->ArrCode[Code->top_number - 1], Name);
+    fprintf (Code->listing_file, "    %0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], Name);
+    //printf ("    %0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], Name);
 
     return;
 }
 
 void print_element (StructMachineCode* Code)
 {
-    fprintf (Code->listing_file, "    %0.4d %0.2x\n", Code->top_number, Code->ArrCode[Code->top_number]);
+    fprintf (Code->listing_file, "    %0.4d %0.2x\n", Code->ip, Code->ArrCode[Code->ip]);
+    //printf ("    %0.4d %0.2x\n", Code->ip, Code->ArrCode[Code->ip]);
 
     return;
 }
@@ -788,15 +686,52 @@ void make_bin_file (FILE* Bin, StructMachineCode* Code)
 
     // unsigned char Sgn     = 218;
     // unsigned char Version = 1;
-    // unsigned char Amount  = Code->top_number;
+    // unsigned char Amount  = Code->ip;
 
     //printf ("%0.2x %0.2x %0.2x\n", Sgn, Version, Amount);
-    unsigned char Passport[3] = {Code->sygnature, Code->version, Code->size};
 
-    fwrite (Passport, 3, sizeof (*Passport), Bin);
-    fwrite (Code->ArrCode, Code->top_number, sizeof (*Code->ArrCode), Bin);
+    fwrite (&Code->sygnature, 1, sizeof (Code->sygnature), Bin);
+    fwrite (&Code->version, 1, sizeof (Code->version), Bin);
+    fwrite (&Code->size, 1, sizeof (Code->size), Bin);
+
+    fwrite (Code->ArrCode, Code->ip, sizeof (*Code->ArrCode), Bin);
 
     return;
+}
+
+
+int clear_comments (char* Name)
+{
+    int length = strlen (Name);
+
+    int i = 0;
+
+    for (; i < length ; i++)
+    {
+        //printf ("%d %c\n", i, Name[i]);
+
+        // if ((Name[i] == ']') && (Name[i + 1] == ';'))
+        // {
+        //     Name[i + 1] = ' ';
+        //     Name[i + 2] = ';';
+        //     return 0;
+        // }
+        // else if (Name[i] == ';')
+        // {
+        //     Name[i] = ' ';
+        //     Name[i + 1] = ';';
+        //     return 0;
+        // }
+
+        if ((Name[i] == ']') || (Name[i] == ';'))
+        {
+            Name[i] = ' ';
+        }
+    }
+
+    // /printf ("'%s'\n", Name);
+
+    return 0;
 }
 
 void free_labels (StructMachineCode* Code)

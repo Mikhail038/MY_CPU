@@ -36,7 +36,7 @@
 
 #define DOTXT_1(Message) #Message+1
 
-#define STACKCTOR(stack, Capacity) stack_constructor (stack, Capacity, DOTXT_1 (stack))                                  
+#define STACKCTOR(stack, Capacity) stack_constructor (stack, Capacity, DOTXT_1 (stack))
 
 #define BGN                                                                \
         do                                                                 \
@@ -105,18 +105,17 @@ typedef struct
 
 typedef struct
 {
-    CanaryType          front_canary    = 0;
+    CanaryType      front_canary    = 0;
     unsigned int    hash            = 0;
     unsigned int    hash_data       = 0;
     int             size            = 0;
     int             capacity        = 0;
     StackDataType*  data            = NULL;
-    CanaryType          canary          = 0;
-    // int             canary_size     = 0;
+    CanaryType      canary          = 0;
     int             err             = 0;
     StructInfo*     birth           = NULL;
     StructInfo*     source          = NULL;
-    CanaryType          end_canary      = 0;
+    CanaryType      end_canary      = 0;
 } StructStack;
 
 
@@ -154,7 +153,7 @@ void swap_byte_by_byte (void* FirstData, void* SecondData, int Size);
 
 int compare_byte_by_byte (void* FirstData, void* SecondData, int Size);
 
-void copy_byte_by_byte (void* FirstData, void* SecondData, int Size);   
+void copy_byte_by_byte (void* FirstData, void* SecondData, int Size);
 
 static void create_canary (StructStack* stack);
 

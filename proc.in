@@ -1,11 +1,16 @@
 ;Zdarova ; pishy cod i mne pofig; ;;;
 zero:
+push 2; ; ;
+push rbx; ; ;
+push [2]; ; ;
+push [rbx]; ; ;
 push rax ; ads
 push 80
 push [80]
 pop rcx
 first:
 pop [16]
+push [rax]
 push 70
 second:
 mul
@@ -20,5 +25,6 @@ div
 fourth:
 out
 hlt
+;vsem poka
 ;vsem poka
 

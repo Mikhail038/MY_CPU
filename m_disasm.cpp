@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "asm.h"
+#include "disasm.h"
 #include "stack.h"
-#include "proc.h"
+
 
 
 int main (int argc, char** argv)
@@ -11,28 +13,27 @@ int main (int argc, char** argv)
 
     StructMachineCode Code = {};
 
-    StructStack stack = {};
-
-    if (STACKCTOR (&stack, 10) != 0)
-    {
-        stack_destructor (&stack);
-        return 1;
-    }
-    INIT (stack.birth);
-
-
     check_passport (Bin, &Code);
 
     read_array_of_code (Bin, &Code);
 
     fclose (Bin);
 
+    StructDisasm Array = {};
 
-    run_code (&stack, &Code);
+    Array.Buffer = (unsigned char*) calloc (Code.size * 4, sizeof (*Array.Buffer));
+
+    make_text_from_code (&Array, &Code);
+
+    FILE* Text = argc > 2 ? fopen (argv[2], "wb") : fopen ("disassmebled.in", "wb");
+
+    print_text_in_file (Text, &Array);
+
+    fclose (Text);
 
     free (Code.ArrCode);
 
-    stack_destructor (&stack);
+    free (Array.Buffer);
 
     return 0;
 }

@@ -31,34 +31,10 @@ int main (int argc, char** argv)
 
     Code.ArrCode = (unsigned char*) calloc (1, MaxSize);
 
-    Code.top_number = 0;
+    Code.ip = 0;
 
     make_array_of_code (Amnt_lines, &Source, &Code);
-/*
-    //print array of code============================================
-    for (int i = 0; i < MaxSize; i++)
-    {
-        printf ("%0.2x ", Code.ArrCode[i]);
 
-    //    if (i % 4 == 3)
-    //    {
-    //         printf ("\n");
-    //    }
-       //if
-        // if (ArrCode[i] != 0)
-        // {
-        //     printf ("%d\n", ArrCode[i]);
-
-        //     for (int j = 0; j < sizeof (*ArrCode); j++)
-        //     {
-        //         printf ("%0.2x ", ((unsigned char*)&(ArrCode[i]))[j]);
-        //     }
-
-        //     printf ("\n");
-        // }
-    }
-    //===============================================================
-*/
     free (Source.Buffer);
 
 
