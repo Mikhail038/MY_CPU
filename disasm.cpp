@@ -6,7 +6,7 @@
 #include "disasm.h"
 
 
-
+//TODO jump labels
 
 typedef struct
 {
@@ -79,12 +79,16 @@ int read_command (StructDisasm* Array, StructMachineCode* Code)
 {
     for (int i = 0;  i < AmntCommands; i++)
     {
-        //printf ("'%0.2x' '%0.2x' || '%0.2x' || '%0.2x' || '%0.2x'\n", ArrCommands[i].num, Code->ArrCode[Code->ip], Code->ArrCode[Code->ip] - 32, Code->ArrCode[Code->ip] - 128, Code->ArrCode[Code->ip]- 128 - 32 );
+        //printf ("'%0.2x' '%0.2x' || '%0.2x' || '%0.2x' || '%0.2x'\n", ArrCommands[i].num, Code->ArrCode[Code->ip], Code->ArrCode[Code->ip] - 128, Code->ArrCode[Code->ip] - 256, Code->ArrCode[Code->ip]- 256 - 128 );
 
         if ((ArrCommands[i].num == Code->ArrCode[Code->ip]) ||
         (ArrCommands[i].num == Code->ArrCode[Code->ip] - 32) ||
+        (ArrCommands[i].num == Code->ArrCode[Code->ip] - 64) ||
+        (ArrCommands[i].num == Code->ArrCode[Code->ip] - 32 - 64) ||
         (ArrCommands[i].num == Code->ArrCode[Code->ip] - 128) ||
-        (ArrCommands[i].num == Code->ArrCode[Code->ip]- 128 - 32))
+        (ArrCommands[i].num == Code->ArrCode[Code->ip] - 128 - 32) ||
+        (ArrCommands[i].num == Code->ArrCode[Code->ip] - 128 - 64) ||
+        (ArrCommands[i].num == Code->ArrCode[Code->ip] - 64 - 128 - 32))
         {
             //printf ("!\n");
 
@@ -118,7 +122,6 @@ int read_command (StructDisasm* Array, StructMachineCode* Code)
     return 0;
 }
 
-
 void add_to_array (StructDisasm* Array, const char* line)
 {
     int length = strlen (line);
@@ -140,7 +143,7 @@ int reparse_push_or_pop (StructDisasm* Array, StructMachineCode* Code, const cha
 {
     //printf ("a\n");
 
-    if ((Code->ArrCode[Code->ip] & 128) && (Code->ArrCode[Code->ip] & 32))
+    if ((Code->ArrCode[Code->ip] & 128) && (Code->ArrCode[Code->ip] & 64))
     {
         Array->Buffer[Array->pointer] = '[';
         Array->pointer++;
@@ -164,17 +167,21 @@ int reparse_push_or_pop (StructDisasm* Array, StructMachineCode* Code, const cha
         Array->Buffer[Array->pointer] = ']';
         Array->pointer++;
     }
-    else if (Code->ArrCode[Code->ip] & 32)
+    else if (Code->ArrCode[Code->ip] & 64)
     {
         Code->ip++;
         //printf ("r\n");
         reparse_reg (Array, Code);
     }
-    else
+    else if (strcmp (line, "push") == 0)
     {
         Code->ip++;
         //printf ("d\n");
         reparse_double (Array, Code);
+    }
+    else if (strcmp (line, "pop") == 0)
+    {
+        Code->ip++;
     }
 
     //print_array (Array);

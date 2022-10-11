@@ -5,7 +5,7 @@
 #include "asm.h"
 
 #define KRED "\x1B[31m"
-#define KGRN "\x1B[32m"
+#define KGRN "\x1B[128m"
 #define KBLU "\x1B[34m"
 #define KNRM "\x1B[0m"
 
@@ -13,8 +13,9 @@ static int ROUND = 1;
 
 //DO NOT BEGIN LABELS AFTER EMPTY POP WITH LETTER R
 
-//RAEGISTER 32 MEMORY 128
+//RAEGISTER 64 MEMORY 128
 
+//TODO JUMP WITH if
 
 enum ERegisterNums
 {
@@ -397,7 +398,7 @@ int parse_push_or_pop (StructSource* Source, StructMachineCode* Code, const char
         if (Command = "pop")
         {
             //Source->pointer++;
-            printf ("!'%s'\n", Name);
+            //printf ("!'%s'\n", Name);
             print_command (Code, Command);
 
             return 0;
@@ -515,7 +516,7 @@ void parse_double (StructSource* Source, StructMachineCode* Code,  const char* C
 
 void parse_str (StructSource* Source, StructMachineCode* Code, const char* Command)
 {
-    Code->ArrCode[Code->ip - 1] = (unsigned char)((int) Code->ArrCode[Code->ip - 1] + 32);
+    Code->ArrCode[Code->ip - 1] = (unsigned char)((int) Code->ArrCode[Code->ip - 1] + 64);
 
     print_command (Code, Command);
 

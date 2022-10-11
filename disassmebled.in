@@ -8,18 +8,21 @@ push [rbx]
 push rax
 push 80
 push [80]
-pop rcx
+pop 
+pop [3]
+pop rdx
+pop [rdx]
 pop [16]
 push [rax]
 push 70
-mul
-jump 88
+mul 
+jump 96
 push 140
-jump 58
+jump 66
 push 100
 jump 255
-sub
-div
-out
-hlt
+sub 
+div 
+out 
+hlt 
 ==========================================================

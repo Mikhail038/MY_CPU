@@ -6,13 +6,28 @@
 
 #define AmntCommands 12
 
+typedef struct
+{
+    int            ip;
+    int            size;
+    StructStack*   stack;
+    StructStack*   addres_stack;
+    unsigned char* Array;
+    double*        RAM;
+    double*        Regs;
+} StructCPU;
 
 
-int check_passport (FILE* Bin, StructMachineCode* Code);
 
-int read_array_of_code (FILE* Bin, StructMachineCode* Code);
+void cpu_constructor (FILE* Bin, StructCPU* CPU);
 
-void run_code ( StructStack* stack, StructMachineCode* Code);
+int check_passport (FILE* Bin, StructCPU* CPU);
+
+void init_CPU (StructCPU* CPU);
+
+int read_array_of_code (FILE* Bin, StructCPU* CPU);
+
+int execute_code (StructCPU* CPU);
 
 //=============================================
 //=============================================
@@ -20,8 +35,13 @@ void run_code ( StructStack* stack, StructMachineCode* Code);
 
 //=============================================
 
-int make_text_from_code (StructStack* stack, StructMachineCode* Code);
+int execute_command (StructCPU* CPU);
 
-int read_command (StructStack* stack, StructMachineCode* Code);
+void cpu_destructor (StructCPU* CPU);
+
+void run_push_or_pop (StructCPU* CPU, const char* line);
+
+void run_jump (StructCPU* CPU, const char* line);
 
 #endif
+

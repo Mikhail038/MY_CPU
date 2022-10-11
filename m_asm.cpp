@@ -25,7 +25,7 @@ int main (int argc, char** argv)
     fclose (SourceFile);
 
     //printf ("+%s+\n", Source.Buffer);
-    printf ("AmntSymbols %d AmntLines %d\n", Source.amnt_symbols, Amnt_lines);
+    //printf ("AmntSymbols %d AmntLines %d\n", Source.amnt_symbols, Amnt_lines);
 
     StructMachineCode Code = {};
 

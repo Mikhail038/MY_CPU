@@ -15,8 +15,8 @@ enum EErrors
     StackNullPtr            = 4,
     SizeMoreCapacity        = 8,
     StackFrontCanaryIsDead  = 16,
-    StackEndCanaryIsDead    = 32,
-    BirthFileNull           = 64,
+    StackEndCanaryIsDead    = 64,
+    BirthFileNull           = 128,
     BirthFuncNull           = 128,
     SourceFileNull          = 256,
     SourceFuncNull          = 512,
@@ -32,7 +32,7 @@ typedef struct
     char name[60]; //TODO read about svariable array
 } StructError;
 
-static const StructError ArrStructErr[32] =
+static const StructError ArrStructErr[64] =
 {
     {UnknownError,           "Unknown Error"},
     {Capacity,               "Capacity < 0"},
@@ -190,8 +190,6 @@ int check_data_hash (StructStack* stack)
 
     stack->data = (CanaryType*) stack->data -  1/**/;
 
-    //TODO privesty k ukazately na kanareiky
-
     unsigned int old_hash = stack->hash_data;
 
     char* h_data = (char*) stack->data;
@@ -319,8 +317,8 @@ static int stack_variator (StructStack* stack)
     if (PROTECTION_LEVEL > 0)
     {
         MSA (check_stack_front_canary (stack), 16);
-        MSA (check_stack_end_canary (stack), 32);
-        MSA (stack->birth->file != NULL, 64);
+        MSA (check_stack_end_canary (stack), 64);
+        MSA (stack->birth->file != NULL, 128);
         MSA (stack->birth->func != NULL, 128);
         MSA (stack->source->func != NULL, 256);
         MSA (stack->source->func != NULL, 512);
