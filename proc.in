@@ -1,7 +1,19 @@
 ;summator
 
+push 38
+pop
 push 5
-push 33
-add
+pop rax
+push rax
+push 4
+push 5
+pop rcx
+pop [rcx]
+push [5]
+mul
+push 7
+push 3
+sub
+div
 out
 hlt

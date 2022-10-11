@@ -121,6 +121,12 @@ void cpu_constructor (FILE* Bin, StructCPU* CPU)
     CPU->Regs = (double*) calloc (5, sizeof (*CPU->RAM));
     CPU->RAM  = (double*) calloc (10, sizeof (*CPU->RAM));
 
+    CPU->stack = (StructStack*) calloc (1, sizeof (StructStack));
+    CPU->addres_stack = (StructStack*) calloc (1, sizeof (StructStack));
+
+    STACKCTOR (CPU->stack, 10);
+    STACKCTOR (CPU->addres_stack, 10);
+
     return;
 }
 
@@ -168,8 +174,18 @@ int execute_code (StructCPU* CPU)
 {
     for (; CPU->ip < CPU->size;)
     {
-        execute_command (CPU);
-        //printf ("done\n");
+        int i = execute_command (CPU);
+
+        if (i == -1)
+        {
+            printf ("crush\n");
+        }
+        else if (i == 1)
+        {
+            printf ("really halted!\n");
+            return 0;
+        }
+
     }
 
     return 0;
@@ -177,78 +193,101 @@ int execute_code (StructCPU* CPU)
 
 #define DEF_CMD(name,num,...) \
 case num: \
-    __VA_ARGS__
+    __VA_ARGS__ \
+    return 0;
 
 int execute_command (StructCPU* CPU)
 {
+    int marker = 0;
+
     for (int i = 0;  i < AmntCommands; i++)
     {
-        //printf ("'%0.2x' '%0.2x' || '%0.2x' || '%0.2x' || '%0.2x'\n", ArrCommands[i].num, Code->ArrCode[Code->ip], Code->ArrCode[Code->ip] - 128, Code->ArrCode[Code->ip] - 256, Code->ArrCode[Code->ip]- 256 - 128 );
+        marker = CPU->Array[CPU->ip] & 31;
 
-        if ((ArrCommands[i].num == CPU->Array[CPU->ip]) ||
-        (ArrCommands[i].num == CPU->Array[CPU->ip] - 32) ||
-        (ArrCommands[i].num == CPU->Array[CPU->ip] - 64) ||
-        (ArrCommands[i].num == CPU->Array[CPU->ip] - 32 - 64) ||
-        (ArrCommands[i].num == CPU->Array[CPU->ip] - 128) ||
-        (ArrCommands[i].num == CPU->Array[CPU->ip] - 128 - 32) ||
-        (ArrCommands[i].num == CPU->Array[CPU->ip] - 128 - 64) ||
-        (ArrCommands[i].num == CPU->Array[CPU->ip] - 64 - 128 - 32))
+       // printf ("%0.4d %d %d\n", CPU->ip, ArrCommands[i].num, marker);
+        if (ArrCommands[i].num == marker)
         {
-            //printf ("!\n");
-
-            //printf ("%s\n", ArrCommands[i].name);
-
-            if (    strcmp (ArrCommands[i].name, "push") == 0)
+            switch (marker)
             {
-                //add_to_array (Array, ArrCommands[i].name);
-                run_push_or_pop (CPU, ArrCommands[i].name);
-                return 0;
-            }
-            else if (strcmp (ArrCommands[i].name, "pop" ) == 0)
-            {
-                //add_to_array (Array, ArrCommands[i].name);
-                run_jump (CPU, ArrCommands[i].name);
-                return 0;
-            }
-            else if (strcmp (ArrCommands[i].name, "jump") == 0)
-            {
-                //add_to_array (Array, ArrCommands[i].name);
-                run_jump (CPU, ArrCommands[i].name);
-                return 0;
-            }
-            else
-            {
-                switch (ArrCommands[i].num)
-                {
-                #include "simple_commands.h"
-                    default:
-                        assert (0);
-                        break;
-                }
-                return 0;
-
+                #include "commands.h"
+                default:
+                    printf ("default error!\n");
+                    exit (0);
             }
         }
     }
+    printf ("Unknown Command! marker = %d\n", marker);
 
-    return 0;
+    return -1;
 }
-
 #undef DEF_CMD(name,num,...)
 
 void cpu_destructor (StructCPU* CPU)
 {
+    free (CPU->Array);
+    free (CPU->RAM);
+    free (CPU->Regs);
+
+    stack_destructor (CPU->stack);
+    stack_destructor (CPU->addres_stack);
+
+    free (CPU->stack);
+    free (CPU->addres_stack);
+
+
     return;
 }
 
-
 //=================================================================
-void run_push_or_pop (StructCPU* CPU, const char* line)
+
+#define PUSH_CMD(num,...) \
+case num: \
+    __VA_ARGS__ \
+    break;
+
+void run_push (StructCPU* CPU)
 {
-
+    int marker = 0;
+    marker = (CPU->Array[CPU->ip] >> 5);
+    CPU->ip++;
+    //printf ("%d %d\n",  (int) CPU->Array[CPU->ip], marker);
+    //printf ("11\n");
+    switch (marker)
+    {
+        #include "Push.h"
+        default:
+            printf ("push error\n");
+            exit (0);
+    }
 }
+#undef PUSH_CMD(num,...)
 
-void run_jump (StructCPU* CPU, const char* line)
+#define POP_CMD(num,...) \
+case num: \
+    __VA_ARGS__ \
+    break;
+
+void run_pop (StructCPU* CPU)
+{
+    int marker = 0;
+    marker = ( CPU->Array[CPU->ip] >> 5 );
+    CPU->ip++;
+
+    //printf ("%d %d\n",  (int) CPU->Array[CPU->ip], marker);
+    //printf ("22\n");
+
+    switch (marker)
+    {
+        #include "Pop.h"
+        default:
+            printf ("pop error\n");
+            exit (0);
+    }
+}
+#undef POP_CMD(num,...)
+
+
+void run_jump (StructCPU* CPU)
 {
 
 }

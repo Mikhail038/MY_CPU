@@ -106,8 +106,14 @@ bool stack_is_empty (StructStack* stack)
 {
     BGN;
     END;
+    // printf ("me %d\n", stack->size);
+    if (stack->size < 1)
+    {
+        return true;
+    }
 
-    return !(stack->size);
+    return false;
+
 }
 
 void copy_byte_by_byte (void* FirstData, void* SecondData, int Size)
@@ -658,6 +664,7 @@ int stack_constructor (StructStack* stack, int Capacity, const char* Name)
     MCA (stack != NULL, 1);
 
     stack->capacity = Capacity;
+    stack->size = 0;
 
     if (PROTECTION_LEVEL > 0)
     {

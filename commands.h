@@ -6,14 +6,16 @@ DEF_CMD ("add", add,
 {
     double a = 0;
     double b = 0;
+    //printf ("ya pidor! %d\n", CPU->stack->size);
 
     pop_from_stack (CPU->stack, &a);
     pop_from_stack (CPU->stack, &b);
 
     push_in_stack (CPU->stack, a + b);
 
-    return 0;
-    break;
+    //printf ("a + b %lg\n", a + b);
+
+    CPU->ip++;
 })
 
 DEF_CMD ("sub", sub,
@@ -26,8 +28,7 @@ DEF_CMD ("sub", sub,
 
     push_in_stack (CPU->stack, b - a);
 
-    return 0;
-    break;
+    CPU->ip++;
 })
 
 DEF_CMD ("mul", mul,
@@ -40,8 +41,7 @@ DEF_CMD ("mul", mul,
 
     push_in_stack (CPU->stack, a * b);
 
-    return 0;
-    break;
+    CPU->ip++;
 })
 
 DEF_CMD ("div", dvd,
@@ -56,8 +56,7 @@ DEF_CMD ("div", dvd,
 
     push_in_stack (CPU->stack, b / a);
 
-    return 0;
-    break;
+    CPU->ip++;
 })
 
 DEF_CMD ("dup", dup,
@@ -69,20 +68,37 @@ DEF_CMD ("dup", dup,
 
     push_in_stack (CPU->stack, a + a);
 
-    return 0;
-    break;
+    CPU->ip++;
 })
 
 DEF_CMD ("out", out,
 {
-    printf ("out:  %lg", CPU->stack->data[CPU->stack->size]);
+    double x = 0;
 
-    return 0;
-    break;
+    pop_from_stack (CPU->stack, &x);
+
+    printf ("out:  %lg\n", x);
+    CPU->ip++;
 })
 
 DEF_CMD ("hlt", hlt,
 {
+    printf ("halted\n");
     return 1;
-    break;
+})
+
+
+DEF_CMD ("push", push,
+{
+    run_push (CPU);
+})
+
+DEF_CMD ("pop", pop,
+{
+    run_pop (CPU);
+})
+
+DEF_CMD ("jump", jump,
+{
+    run_jump (CPU);
 })

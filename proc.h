@@ -39,9 +39,11 @@ int execute_command (StructCPU* CPU);
 
 void cpu_destructor (StructCPU* CPU);
 
-void run_push_or_pop (StructCPU* CPU, const char* line);
+void run_push (StructCPU* CPU);
 
-void run_jump (StructCPU* CPU, const char* line);
+void run_pop (StructCPU* CPU);
+
+void run_jump (StructCPU* CPU);
 
 #endif
 

@@ -13,7 +13,7 @@ static int ROUND = 1;
 
 //DO NOT BEGIN LABELS AFTER EMPTY POP WITH LETTER R
 
-//RAEGISTER 64 MEMORY 128
+//REGISTER 64 MEMORY 128
 
 //TODO JUMP WITH if
 
@@ -353,7 +353,7 @@ int parse (StructSource* Source, StructMachineCode* Code)
                 }
                 else
                 {
-                    fprintf (Code->listing_file, "    %0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], ArrCommands[j].name);
+                    fprintf (Code->listing_file, "    %0.4d x%0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], ArrCommands[j].name);
                 }
 
                 return ArrCommands[j].args;
@@ -581,7 +581,7 @@ void parse_op (StructSource* Source, StructMachineCode* Code, const char* Comman
     {
         parse_str (Source, Code, Command);
     }
-    else if ((Name[0] <= '9') && ((Name[0] >= '1')))
+    else if ((Name[0] <= '9') && ((Name[0] >= '0')))
     {
         parse_int (Source, Code, Command);
     }
@@ -665,7 +665,7 @@ void jump_label (StructSource* Source,StructMachineCode* Code)
 
 void print_command (StructMachineCode* Code, const char* Name)
 {
-    fprintf (Code->listing_file, "    %0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], Name);
+    fprintf (Code->listing_file, "    %0.4d x%0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], Name);
     //printf ("    %0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], Name);
 
     return;
@@ -673,7 +673,7 @@ void print_command (StructMachineCode* Code, const char* Name)
 
 void print_element (StructMachineCode* Code)
 {
-    fprintf (Code->listing_file, "    %0.4d %0.2x\n", Code->ip, Code->ArrCode[Code->ip]);
+    fprintf (Code->listing_file, "    %0.4d x%0.2x\n", Code->ip, Code->ArrCode[Code->ip]);
     //printf ("    %0.4d %0.2x\n", Code->ip, Code->ArrCode[Code->ip]);
 
     return;
