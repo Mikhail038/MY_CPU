@@ -1,81 +1,69 @@
-// #define POP(name) \
-//     double name = 0; \
-//     pop_from_stack (CPU->stack, &name);
+ #define POP(name) \
+    double name = 0; \
+    pop_from_stack (CPU->stack, &name); \
+    printf ("   poped %lg\n", name);
+
+ #define PUSH(name) \
+    push_in_stack (CPU->stack, name); \
+    printf ("   pushed %lg\n", name);
 
 DEF_CMD ("add", add,
 {
-    double a = 0;
-    double b = 0;
-    //printf ("ya pidor! %d\n", CPU->stack->size);
+    POP (a);
+    POP (b);
 
-    pop_from_stack (CPU->stack, &a);
-    pop_from_stack (CPU->stack, &b);
-
-    push_in_stack (CPU->stack, a + b);
-
-    //printf ("a + b %lg\n", a + b);
+    PUSH (a + b);
 
     CPU->ip++;
 })
 
 DEF_CMD ("sub", sub,
 {
-    double a = 0;
-    double b = 0;
+    POP (a);
+    POP (b);
 
-    pop_from_stack (CPU->stack, &a);
-    pop_from_stack (CPU->stack, &b);
-
-    push_in_stack (CPU->stack, b - a);
+    PUSH (b - a);
 
     CPU->ip++;
 })
 
 DEF_CMD ("mul", mul,
 {
-    double a = 0;
-    double b = 0;
+    POP (a);
+    POP (b);
 
-    pop_from_stack (CPU->stack, &a);
-    pop_from_stack (CPU->stack, &b);
-
-    push_in_stack (CPU->stack, a * b);
+    PUSH (a * b);
 
     CPU->ip++;
 })
 
 DEF_CMD ("div", dvd,
 {
-    double a = 0;
-    double b = 0;
+    POP (a);
+    POP (b);
 
-    pop_from_stack (CPU->stack, &a);
-    pop_from_stack (CPU->stack, &b);
 
     assert (a != 0);
 
-    push_in_stack (CPU->stack, b / a);
+    PUSH (b / a);
+
 
     CPU->ip++;
 })
 
 DEF_CMD ("dup", dup,
 {
-    double a = 0;
-    double b = 0;
+    POP (a);
 
-    pop_from_stack (CPU->stack, &a);
-
-    push_in_stack (CPU->stack, a + a);
+    PUSH (a);
+    PUSH (a);
 
     CPU->ip++;
 })
 
 DEF_CMD ("out", out,
 {
-    double x = 0;
-
-    pop_from_stack (CPU->stack, &x);
+    POP (x);
 
     printf ("out:  %lg\n", x);
     CPU->ip++;
@@ -102,3 +90,36 @@ DEF_CMD ("jump", jump,
 {
     run_jump (CPU);
 })
+
+DEF_CMD ("call", call,
+{
+    int label = 0;
+
+    CPU->ip++;
+
+    for (int i = 0; i < sizeof (int); i++)
+    {
+        ((unsigned char*) &label)[i] = CPU->Array[CPU->ip];
+        CPU->ip++;
+    }
+    push_in_stack (CPU->addres_stack, CPU->ip);
+
+    printf ("   called %d from %d\n", label, CPU->ip);
+    CPU->ip = label;
+})
+
+DEF_CMD ("ret", ret,
+{
+    double d_label = 0;
+
+    pop_from_stack (CPU->addres_stack, &d_label);
+
+    int label = (int) d_label;
+
+    printf ("   returned %d from %d\n", label, CPU->ip);
+    CPU->ip = label;
+})
+
+#undef POP
+
+#undef PUSH

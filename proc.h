@@ -4,8 +4,6 @@
 #include "stack.h"
 #include "asm.h"
 
-#define AmntCommands 12
-
 typedef struct
 {
     int            ip;

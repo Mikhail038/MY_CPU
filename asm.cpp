@@ -15,8 +15,6 @@ static int ROUND = 1;
 
 //REGISTER 64 MEMORY 128
 
-//TODO JUMP WITH if
-
 enum ERegisterNums
 {
     rax  = 1,
@@ -35,7 +33,6 @@ typedef struct
 {
     ECommandNums  num;
     char          name[10];
-    int           args;
 } StructCommands;
 
 typedef struct
@@ -44,21 +41,15 @@ typedef struct
     char* name;
 } StructLabels;
 
+#define DEF_CMD(name, num) \
+    {name, #name},
+
 static const StructCommands ArrCommands[AmntCommands] =
 {
-    {push, "push", 1},
-    {pop,  "pop",  0},
-    {add,  "add",  0},
-    {sub,  "sub",  0},
-    {mul,  "mul",  0},
-    {dvd,  "div",  0},
-    {inp,  "inp",  0},
-    {out,  "out",  0},
-    {dump, "dump", 0},
-    {dup, "dup",   0},
-    {jump, "jump", 1},
-    {hlt,  "hlt",  0}
+    #include "def_asm.h"
+    {dvd, "div"}
 };
+#undef DEF_CMD
 
 static const StructRegisters ArrRegisters[4] =
 {
@@ -311,7 +302,7 @@ int parse (StructSource* Source, StructMachineCode* Code)
     {
         if (add_label (Name, Code) != 0)
         {
-            printf ("hui\n");
+            printf ("error\n");
             return -1;
         }
         Source->pointer += i;
@@ -326,6 +317,8 @@ int parse (StructSource* Source, StructMachineCode* Code)
                 unsigned char symbol = ArrCommands[j].num;
 
                 Code->ArrCode[Code->ip] = symbol;
+
+                //printf ("#%0.2x\n", Code->ArrCode[Code->ip]);
 
                 Source->pointer += i;
                 Code->ip++;
@@ -344,9 +337,11 @@ int parse (StructSource* Source, StructMachineCode* Code)
                         return -1;
                     }
                 }
-                else if (ArrCommands[j].num == jump)
+                else if (((ArrCommands[j].num & 31) == jump) || (ArrCommands[j].num == 12))
                 {
-                    if (parse_jump (Source, Code) != 0)
+                //printf ("#%0.2x\n", Code->ArrCode[Code->ip]);
+
+                    if (parse_jump (Source, Code, ArrCommands[j].name) != 0)
                     {
                         return -1;
                     }
@@ -356,11 +351,12 @@ int parse (StructSource* Source, StructMachineCode* Code)
                     fprintf (Code->listing_file, "    %0.4d x%0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], ArrCommands[j].name);
                 }
 
-                return ArrCommands[j].args;
+                return 0;
             }
         }
+        printf ("Unknown command! --%s--\n", Name);
+        exit (0);
     }
-
 }
 
 
@@ -417,14 +413,14 @@ int parse_push_or_pop (StructSource* Source, StructMachineCode* Code, const char
 
 }
 
-int parse_jump (StructSource* Source, StructMachineCode* Code)
+int parse_jump (StructSource* Source, StructMachineCode* Code, const char* Command)
 {
     seek (Source);
 
     char* Name = &(Source->Buffer[Source->pointer]);
 
     int i = 0;
-    for (; i < Source->amnt_symbols; i++)
+    for (; i < Source->amnt_symbols - Source->pointer; i++)
     {
         if ((Name[i] == ' ') || (Name[i] == '\n'))
         {
@@ -435,17 +431,21 @@ int parse_jump (StructSource* Source, StructMachineCode* Code)
 
     if ((Name[0] >= 'A') && (Name[0] <= 'z'))
     {
+        print_command (Code, Command);
+
         jump_label (Source, Code);
         return 0;
     }
     if ((Name[0] >= '1') && (Name[0] <= '9'))
     {
+        print_command (Code, Command);
+
         jump_int (Source, Code);
         return 0;
     }
     else
     {
-        printf ("hui\n");
+        printf ("no label\n");
     }
 
     return -1;
@@ -605,7 +605,7 @@ void jump_int (StructSource* Source,StructMachineCode* Code)
     //printf ("'%s'\n", Name);
     sscanf (Name, "%d", &ip);
 
-    print_command (Code, "jump");
+    //print_command (Code, "jump");
 
     for (int j = 0; j < sizeof (int); j++)
     {
@@ -628,7 +628,7 @@ void jump_label (StructSource* Source,StructMachineCode* Code)
 
     int length = strlen (Name);
 
-    print_command (Code, "jump");
+    //print_command (Code, "jump");
 
     for (int i = 0; i < 15; i++)
     {
@@ -654,7 +654,8 @@ void jump_label (StructSource* Source,StructMachineCode* Code)
         }
         else
         {
-            abort ();
+            printf ("No label found! --%s--\n", Name);
+            exit (0);
         }
     }
 
@@ -742,7 +743,7 @@ void free_labels (StructMachineCode* Code)
     {
         if (ArrLabels[i].num != -1)
         {
-            fprintf (Code->listing_file,"freed label: %d %s %d  %0.2x %0.2x %0.2x %0.2x\n",
+            fprintf (Code->listing_file,"freed label: %d %-15s %-5d  %0.2x %0.2x %0.2x %0.2x\n",
             i, ArrLabels[i].name, ArrLabels[i].num,
             ((unsigned char*) &ArrLabels[i].num)[0],
             ((unsigned char*) &ArrLabels[i].num)[1],

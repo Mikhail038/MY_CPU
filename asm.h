@@ -1,23 +1,17 @@
 #ifndef ASM_H
 #define ASM_H
 
-#define AmntCommands 15
+#define AmntCommands 30
+
+#define DEF_CMD(name, num, ...) \
+    name = num,
 
 enum ECommandNums
 {
-    push = 1,
-    pop  = 2,
-    add  = 3,
-    sub  = 4,
-    mul  = 5,
-    dvd  = 6,
-    inp  = 7,
-    out  = 8,
-    dump = 9,
-    dup  = 10,
-    jump = 11,
-    hlt  = 0
+    #include "def_asm.h"
+    dvd = 6
 };
+#undef DEF_CMD
 
 typedef struct
 {
@@ -59,7 +53,7 @@ int parse (StructSource* Source, StructMachineCode* Code);
 
 int parse_push_or_pop (StructSource* Source, StructMachineCode* Code, const char* Command);
 
-int parse_jump (StructSource* Source, StructMachineCode* Code);
+int parse_jump (StructSource* Source, StructMachineCode* Code, const char* Command);
 
 
 

@@ -6,46 +6,6 @@
 #include "stack.h"
 #include "proc.h"
 
-/*
-typedef struct
-{
-    char* name = NULL;
-    char* file = NULL;
-    char* func = NULL;
-    int   line;
-} StructInfo;
-
-typedef struct
-{
-    CanaryType          front_canary    = 0;
-    unsigned int    hash            = 0;
-    unsigned int    hash_data       = 0;
-    int             size            = 0;
-    int             capacity        = 0;
-    StackDataType*  data            = NULL;
-    CanaryType          canary          = 0;
-    // int             canary_size     = 0;
-    int             err             = 0;
-    StructInfo*     birth           = NULL;
-    StructInfo*     source          = NULL;
-    CanaryType          end_canary      = 0;
-} StructStack;
-
-StructFunctions ArrFunctions[AmntCommands] =
-{
-    {push, 1, push_proc, "push"},
-    {pop,  0, pop_proc,  "pop"},
-    {add,  0, add_proc,  "add"},
-    {sub,  0, sub_proc,  "sub"},
-    {mul,  0, mul_proc,  "mul"},
-    {dvd,  0, div_proc,  "div"},
-    {inp,  0, inp_proc,  "inp"},
-    {out,  0, out_proc,  "out"},
-    {dump, 0, dump_proc, "dump"},
-    {hlt,  0, hlt_proc,  "hlt"}
-};
-*/
-
 
 typedef struct
 {
@@ -54,21 +14,15 @@ typedef struct
     int           args;
 } StructCommands;
 
+#define DEF_CMD(name, num) \
+    {name, #name},
+
 static const StructCommands ArrCommands[AmntCommands] =
 {
-    {push, "push", 1},
-    {pop,  "pop",  0},
-    {add,  "add",  0},
-    {sub,  "sub",  0},
-    {mul,  "mul",  0},
-    {dvd,  "div",  0},
-    {inp,  "inp",  0},
-    {out,  "out",  0},
-    {dump, "dump", 0},
-    {dup, "dup",   0},
-    {jump, "jump", 1},
-    {hlt,  "hlt",  0}
+    #include "def_asm.h"
+    {dvd, "div"}
 };
+#undef DEF_CMD
 
 enum EErrors
 {
@@ -179,6 +133,7 @@ int execute_code (StructCPU* CPU)
         if (i == -1)
         {
             printf ("crush\n");
+            return 1;
         }
         else if (i == 1)
         {
@@ -188,7 +143,8 @@ int execute_code (StructCPU* CPU)
 
     }
 
-    return 0;
+    printf ("overflow\n");
+    return 2;
 }
 
 #define DEF_CMD(name,num,...) \
@@ -216,7 +172,7 @@ int execute_command (StructCPU* CPU)
             }
         }
     }
-    printf ("Unknown Command! marker = %d\n", marker);
+    printf ("Unknown Command! marker = %d ip %d\n", marker, CPU->ip);
 
     return -1;
 }
@@ -250,8 +206,7 @@ void run_push (StructCPU* CPU)
     int marker = 0;
     marker = (CPU->Array[CPU->ip] >> 5);
     CPU->ip++;
-    //printf ("%d %d\n",  (int) CPU->Array[CPU->ip], marker);
-    //printf ("11\n");
+
     switch (marker)
     {
         #include "Push.h"
@@ -260,7 +215,7 @@ void run_push (StructCPU* CPU)
             exit (0);
     }
 }
-#undef PUSH_CMD(num,...)
+#undef PUSH_CMD
 
 #define POP_CMD(num,...) \
 case num: \
@@ -273,9 +228,6 @@ void run_pop (StructCPU* CPU)
     marker = ( CPU->Array[CPU->ip] >> 5 );
     CPU->ip++;
 
-    //printf ("%d %d\n",  (int) CPU->Array[CPU->ip], marker);
-    //printf ("22\n");
-
     switch (marker)
     {
         #include "Pop.h"
@@ -284,12 +236,26 @@ void run_pop (StructCPU* CPU)
             exit (0);
     }
 }
-#undef POP_CMD(num,...)
+#undef POP_CMD
 
+#define JMP_CMD(num,...) \
+case num: \
+    __VA_ARGS__ \
+    break;
 
 void run_jump (StructCPU* CPU)
 {
+    int marker = 0;
+    marker = ( CPU->Array[CPU->ip] >> 5 );
+    CPU->ip++;
 
+    switch (marker)
+    {
+        #include "Jump.h"
+        default:
+            printf ("jump error\n");
+            exit (0);
+    }
 }
-
+#undef JMP_CMD
 //=================================================================
