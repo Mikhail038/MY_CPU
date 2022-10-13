@@ -365,6 +365,8 @@ void stack_dump (StructStack* stack)
 
     END;
 
+    abort ();
+
     return;
 }
 
@@ -456,7 +458,7 @@ static void print_stack_data_double (StructStack* stack) // print_el (int) // pr
 
         for (int j = 0; j < sizeof ((stack->data)[i]); j++)
         {
-            fprintf (stderr, "%0.2x ", ((unsigned char*)&(stack->data)[i])[j] );
+            fprintf (stderr, "%0.2X ", ((unsigned char*)&(stack->data)[i])[j] );
         }
 
         fprintf (stderr, "\n");
@@ -507,20 +509,29 @@ static void poison_array (void* VictimArray, int ArraySize, int Size)
 
 static int make_stack_bigger (StructStack* stack)
 {
+    BGN;
+
     if (stack_variator (stack) != 0)
     {
         stack_dump (stack);
         return 1;
     }
 
+    //printf ("-------'%p' '%d' '%d' '%d'\n", stack->data, stack->capacity, sizeof (*stack->data), coef);
     stack->data = (StackDataType*) realloc (stack->data, (stack->capacity > 0) ? stack->capacity * coef * sizeof (*stack->data) : (stack->capacity + 1) * coef * sizeof (*stack->data) );
 
     stack->capacity = (stack->capacity > 0) ? stack->capacity * coef : (stack->capacity + 1) * coef;
+    //printf ("-------'%p' '%d' '%d' '%d'\n", stack->data, stack->capacity, sizeof (*stack->data), coef);
+
 
     if (stack == NULL)
     {
+        END;
+
         return 1;
     }
+
+    END;
 
     return 0;
 }
@@ -576,12 +587,13 @@ static int make_stack_smaller (StructStack* stack)
         return 1;
     }
 
-    //printf ("-------'%p' '%d' '%d' '%d'\n", stack->data, stack->capacity, sizeof (*stack->data), coef);
+    //printf ("-------'%p' '%d' of '%d'   '%d' '%d'\n", stack->data, stack->size, stack->capacity, sizeof (*stack->data), coef);
     stack->data = (StackDataType*) realloc (stack->data, sizeof (*stack->data) * ( stack->capacity / coef));
-    //printf ("-------'%p' '%d' '%d' '%d'\n", stack->data, stack->capacity, sizeof (*stack->data), coef);
-
-
     stack->capacity /= coef;
+
+    //printf ("-------'%p' '%d' of '%d'   '%d' '%d'\n", stack->data, stack->size, stack->capacity, sizeof (*stack->data), coef);
+
+
 
     if (stack->data == NULL)
     {
@@ -737,7 +749,7 @@ int push_in_stack (StructStack* stack, StackDataType x)
         return 1;
     }
 
-    if (stack_is_full (stack))
+     if (stack_is_full (stack))
     {
         if (PROTECTION_LEVEL > 1 ? (make_stack_bigger_with_canaries (stack) != 0) : (make_stack_bigger (stack) != 0))
         {
@@ -749,7 +761,7 @@ int push_in_stack (StructStack* stack, StackDataType x)
         }
     }
 
-    //printf ("%d!!\n", stack->size);
+    //printf ("push %lg in %d of %d !!\n", x, stack->size, stack->capacity);
     stack->data[stack->size] = x;
     stack->size++;
 
@@ -817,9 +829,8 @@ int pop_from_stack (StructStack* stack, StackDataType* x)
         stack->size--;
     }
 
-    make_hash (stack);
 
-    if ((stack->size <= 4 * stack->capacity) && (stack->capacity > 10))
+    if ((stack->size * coef * coef <= stack->capacity) && (stack->capacity > 10))
     {
         if (PROTECTION_LEVEL > 1 ? (make_stack_smaller_with_canaries (stack) != 0) : (make_stack_smaller (stack) != 0))
         {
@@ -827,6 +838,7 @@ int pop_from_stack (StructStack* stack, StackDataType* x)
         }
     }
 
+    make_hash (stack);
 
     END;
 

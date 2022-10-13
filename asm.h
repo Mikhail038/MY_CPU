@@ -1,17 +1,23 @@
 #ifndef ASM_H
 #define ASM_H
 
-#define AmntCommands 30
+#define AmntCommands 50
 
-#define DEF_CMD(name, num, ...) \
-    name = num,
+
+#define DEF_CMD(name, e_num, num, ...) \
+    e_num = num,
 
 enum ECommandNums
 {
-    #include "def_asm.h"
-    dvd = 6
+    #include "commands.h"
 };
 #undef DEF_CMD
+
+typedef struct
+{
+    ECommandNums  num;
+    char          name[10];
+} StructCommands;
 
 typedef struct
 {
@@ -30,6 +36,21 @@ typedef struct
     int            size;
     FILE*          listing_file;
 } StructMachineCode;
+
+typedef struct
+{
+    int   num = -1;
+    char* name;
+} StructLabels;
+
+#define DEF_CMD(name, e_num, ...) \
+    {e_num, name},
+
+const StructCommands ArrCommands[AmntCommands] =
+{
+    #include "commands.h"
+};
+#undef DEF_CMD
 
 //======================================================================
 

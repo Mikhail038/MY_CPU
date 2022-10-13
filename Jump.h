@@ -5,13 +5,11 @@
 
 #define STD_JUMP \
     int label = 0; \
-\
     for (int i = 0; i < sizeof (int); i++) \
     { \
         ((unsigned char*) &label)[i] = CPU->Array[CPU->ip]; \
         CPU->ip++; \
     } \
-\
     printf ("   jumped %d from %d\n", label, CPU->ip); \
     CPU->ip = label;
 

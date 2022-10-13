@@ -3,26 +3,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "stack.h"
 #include "proc.h"
 
-
-typedef struct
-{
-    ECommandNums  num;
-    char          name[10];
-    int           args;
-} StructCommands;
-
-#define DEF_CMD(name, num) \
-    {name, #name},
-
-static const StructCommands ArrCommands[AmntCommands] =
-{
-    #include "def_asm.h"
-    {dvd, "div"}
-};
-#undef DEF_CMD
+//extern StructCommands ArrCommands[AmntCommands];
 
 enum EErrors
 {
@@ -78,8 +61,8 @@ void cpu_constructor (FILE* Bin, StructCPU* CPU)
     CPU->stack = (StructStack*) calloc (1, sizeof (StructStack));
     CPU->addres_stack = (StructStack*) calloc (1, sizeof (StructStack));
 
-    STACKCTOR (CPU->stack, 10);
-    STACKCTOR (CPU->addres_stack, 10);
+    STACKCTOR (CPU->stack, 20);
+    STACKCTOR (CPU->addres_stack, 20);
 
     return;
 }
@@ -90,13 +73,6 @@ int check_passport (FILE* Bin, StructCPU* CPU)
     MCA (Bin  != NULL, -1);
     MCA (CPU != NULL, -2);
 
-    // fscanf (Bin, "%c", Code->sygnature);
-    // fscanf (Bin, "%c", Code->version);
-    // fscanf (Bin, "%c", ((unsigned char*) &Code->size)[0]);
-    // fscanf (Bin, "%c", ((unsigned char*) &Code->size)[1]);
-    // fscanf (Bin, "%c", ((unsigned char*) &Code->size)[2]);
-    // fscanf (Bin, "%c", ((unsigned char*) &Code->size)[3]);
-
     unsigned char sygnature;
     unsigned char version;
 
@@ -104,7 +80,17 @@ int check_passport (FILE* Bin, StructCPU* CPU)
     fread (&version,   1, sizeof (version),   Bin);
     fread (&CPU->size, 1, sizeof (CPU->size),      Bin);
 
-    // printf ("%0.2x %0.2x   %0.2x %0.2x %0.2x %0.2x (%d)\n", Code->sygnature, Code->version,
+    if (sygnature != 218)
+    {
+        printf ("Wrong sygnature!\n");
+        exit (0);
+    }
+    if (version != 1)
+    {
+        printf ("Wrong version!\n");
+        exit (0);
+    }
+    // printf ("%0.2X %0.2X   %0.2X %0.2X %0.2X %0.2X (%d)\n", Code->sygnature, Code->version,
     //  ((unsigned char*) &Code->size)[0],  ((unsigned char*) &Code->size)[1],
     //  ((unsigned char*) &Code->size)[2],  ((unsigned char*) &Code->size)[3], Code->size);
 
@@ -119,7 +105,7 @@ int read_array_of_code (FILE* Bin, StructCPU* CPU)
     CPU->Array = (unsigned char*) calloc (CPU->size * 2, sizeof (*CPU->Array));
     fread (CPU->Array, CPU->size, sizeof (*CPU->Array), Bin);
 
-    //printf ("%0.2x %d", Code->ArrCode[Code->ip], Code->ip);
+    //printf ("%0.2X %d", Code->ArrCode[Code->ip], Code->ip);
 
     return 0;
 }
@@ -147,9 +133,9 @@ int execute_code (StructCPU* CPU)
     return 2;
 }
 
-#define DEF_CMD(name,num,...) \
+#define DEF_CMD(name, e_num, num, f_proc, f_parse, f_reparse) \
 case num: \
-    __VA_ARGS__ \
+    f_proc \
     return 0;
 
 int execute_command (StructCPU* CPU)
@@ -237,7 +223,7 @@ void run_pop (StructCPU* CPU)
     }
 }
 #undef POP_CMD
-
+/*
 #define JMP_CMD(num,...) \
 case num: \
     __VA_ARGS__ \
@@ -257,5 +243,5 @@ void run_jump (StructCPU* CPU)
             exit (0);
     }
 }
-#undef JMP_CMD
+#undef JMP_CMD*/
 //=================================================================

@@ -1,6 +1,7 @@
 #ifndef PROC_H
 #define PROC_H
 
+#include <math.h>
 #include "stack.h"
 #include "asm.h"
 
@@ -28,8 +29,6 @@ int read_array_of_code (FILE* Bin, StructCPU* CPU);
 int execute_code (StructCPU* CPU);
 
 //=============================================
-//=============================================
-
 
 //=============================================
 

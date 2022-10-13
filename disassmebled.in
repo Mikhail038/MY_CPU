@@ -1,15 +1,22 @@
 ==========================================================
 DISASSEMBLED FILE
 ==========================================================
-	push 5
-	push 33
-	add
-	call 25
+	push 1
+	inp
+	rnd
+	call 21
+	jump 54
+	dup
+	push 1
+	jae 52
+	dup
+	push 1
+	sub
+	call 21
+	mul
+	ret
+
+	out
 	hlt
 
-	dup
-	push 38
-	jump 49
-	push 48
-	ret
 ==========================================================

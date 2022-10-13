@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "stack.h"
 #include "asm.h"
 
@@ -29,27 +30,7 @@ typedef struct
     const char*    name;
 } StructRegisters;
 
-typedef struct
-{
-    ECommandNums  num;
-    char          name[10];
-} StructCommands;
-
-typedef struct
-{
-    int   num = -1;
-    char* name;
-} StructLabels;
-
-#define DEF_CMD(name, num) \
-    {name, #name},
-
-static const StructCommands ArrCommands[AmntCommands] =
-{
-    #include "def_asm.h"
-    {dvd, "div"}
-};
-#undef DEF_CMD
+//extern StructCommands ArrCommands[AmntCommands];
 
 static const StructRegisters ArrRegisters[4] =
 {
@@ -149,7 +130,7 @@ int close_listing_file (StructMachineCode* Code)
 
     fprintf (Code->listing_file,
              "---------------------------------------------------------------\n"
-             "sygnature '%0.2x' version %0.2x (%d) size %0.2x %0.2x %0.2x %0.2x  (%d)\n"
+             "sygnature 0x%0.2X  |  version 0x%0.2X (%d)  |  size [%0.2X %0.2X %0.2X %0.2X] (%d)\n"
              "---------------------------------------------------------------\n"
              "Compilation ended: %s %s\n"
              "===============================================================\n"
@@ -181,7 +162,8 @@ void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode
         {
             if (parse (Source, Code) == -1)
             {
-                printf ("pzdc!\n");
+                printf ("crush!\n");
+                return;
             }
         }
     }
@@ -260,10 +242,11 @@ int add_label (char* Name, StructMachineCode* Code)
             //printf ("%d %d\n", i, ArrLabels[i].num);
             ArrLabels[i].name = (char*) calloc (Length + 1, sizeof (char));
             ArrLabels[i].name = strcpy (ArrLabels[i].name, Name);
-            (ArrLabels[i].name)[Length - 1] = '\0';
+
+            (ArrLabels[i].name)[Length - 1] = '\0'; //TODO %ms
             ArrLabels[i].num  = Code->ip;
 
-            fprintf (Code->listing_file, "added label: %s %d  %0.2x %0.2x %0.2x %0.2x\n", Name, Code->ip,
+            fprintf (Code->listing_file, "added label: %s %d  [%0.2X %0.2X %0.2X %0.2X]\n", Name, Code->ip,
             ((unsigned char*) &Code->ip)[0],
             ((unsigned char*) &Code->ip)[1],
             ((unsigned char*) &Code->ip)[2],
@@ -279,6 +262,9 @@ int add_label (char* Name, StructMachineCode* Code)
 
 
 
+#define DEF_CMD(name, e_num, num, f_proc, f_parse, f_reparse)\
+    case e_num: \
+        f_parse
 
 int parse (StructSource* Source, StructMachineCode* Code)
 {
@@ -314,41 +300,22 @@ int parse (StructSource* Source, StructMachineCode* Code)
         {
             if (strcmp (Name, ArrCommands[j].name) == 0)
             {
-                unsigned char symbol = ArrCommands[j].num;
+                int marker = ArrCommands[j].num;
 
-                Code->ArrCode[Code->ip] = symbol;
-
-                //printf ("#%0.2x\n", Code->ArrCode[Code->ip]);
+                Code->ArrCode[Code->ip] = ArrCommands[j].num;
+                //printf ("#%0.2X\n", Code->ArrCode[Code->ip]);
 
                 Source->pointer += i;
                 Code->ip++;
 
-                if (ArrCommands[j].num == push)
-                {
-                    if (parse_push_or_pop (Source, Code, "push") != 0)
-                    {
-                        return -1;
-                    }
-                }
-                else if (ArrCommands[j].num == pop)
-                {
-                    if (parse_push_or_pop (Source, Code, "pop") != 0)
-                    {
-                        return -1;
-                    }
-                }
-                else if (((ArrCommands[j].num & 31) == jump) || (ArrCommands[j].num == 12))
-                {
-                //printf ("#%0.2x\n", Code->ArrCode[Code->ip]);
+                //printf ("!! %d\n", marker);
 
-                    if (parse_jump (Source, Code, ArrCommands[j].name) != 0)
-                    {
-                        return -1;
-                    }
-                }
-                else
+                switch (marker)
                 {
-                    fprintf (Code->listing_file, "    %0.4d x%0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], ArrCommands[j].name);
+                    #include "commands.h"
+                    default:
+                        printf ("default error! %s %d \n", Name, marker);
+                        return -1;
                 }
 
                 return 0;
@@ -359,6 +326,7 @@ int parse (StructSource* Source, StructMachineCode* Code)
     }
 }
 
+#undef DEF_CMD
 
 
 int parse_push_or_pop (StructSource* Source, StructMachineCode* Code, const char* Command)
@@ -453,7 +421,7 @@ int parse_jump (StructSource* Source, StructMachineCode* Code, const char* Comma
 
 void parse_int (StructSource* Source, StructMachineCode* Code,  const char* Command)
 {
-    //fprintf (Code->listing_file, "%0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], "push");
+    //fprintf (Code->listing_file, "%0.4d %0.2X %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], "push");
     print_command (Code, Command);
 
     char* Name = &(Source->Buffer[Source->pointer]);
@@ -485,7 +453,7 @@ void parse_int (StructSource* Source, StructMachineCode* Code,  const char* Comm
 
 void parse_double (StructSource* Source, StructMachineCode* Code,  const char* Command)
 {
-    //fprintf (Code->listing_file, "%0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], "push");
+    //fprintf (Code->listing_file, "%0.4d %0.2X %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], "push");
     print_command (Code, Command);
 
     char* Name = &(Source->Buffer[Source->pointer]);
@@ -550,7 +518,7 @@ void parse_str (StructSource* Source, StructMachineCode* Code, const char* Comma
         // if (Name[j] != '\0')
         // {
         //     Code->ArrCode[Code->ip + j] = (unsigned char) ((Name)[j]);
-        //     fprintf (Code->listing_file, "%0.4d %0.2x \n", Code->ip + j, (unsigned char) ((Name)[j]));
+        //     fprintf (Code->listing_file, "%0.4d %0.2X \n", Code->ip + j, (unsigned char) ((Name)[j]));
         // }
     }
 
@@ -666,16 +634,16 @@ void jump_label (StructSource* Source,StructMachineCode* Code)
 
 void print_command (StructMachineCode* Code, const char* Name)
 {
-    fprintf (Code->listing_file, "    %0.4d x%0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], Name);
-    //printf ("    %0.4d %0.2x %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], Name);
+    fprintf (Code->listing_file, "    %0.4d 0x%0.2X %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], Name);
+    //printf ("    %0.4d %0.2X %s\n", Code->ip - 1, Code->ArrCode[Code->ip - 1], Name);
 
     return;
 }
 
 void print_element (StructMachineCode* Code)
 {
-    fprintf (Code->listing_file, "    %0.4d x%0.2x\n", Code->ip, Code->ArrCode[Code->ip]);
-    //printf ("    %0.4d %0.2x\n", Code->ip, Code->ArrCode[Code->ip]);
+    fprintf (Code->listing_file, "    %0.4d 0x%0.2X\n", Code->ip, Code->ArrCode[Code->ip]);
+    //printf ("    %0.4d %0.2X\n", Code->ip, Code->ArrCode[Code->ip]);
 
     return;
 }
@@ -690,7 +658,7 @@ void make_bin_file (FILE* Bin, StructMachineCode* Code)
     // unsigned char Version = 1;
     // unsigned char Amount  = Code->ip;
 
-    //printf ("%0.2x %0.2x %0.2x\n", Sgn, Version, Amount);
+    //printf ("%0.2X %0.2X %0.2X\n", Sgn, Version, Amount);
 
     fwrite (&Code->sygnature, 1, sizeof (Code->sygnature), Bin);
     fwrite (&Code->version, 1, sizeof (Code->version), Bin);
@@ -743,7 +711,7 @@ void free_labels (StructMachineCode* Code)
     {
         if (ArrLabels[i].num != -1)
         {
-            fprintf (Code->listing_file,"freed label: %d %-15s %-5d  %0.2x %0.2x %0.2x %0.2x\n",
+            fprintf (Code->listing_file,"freed label: %d %-15s %-5d [%0.2X %0.2X %0.2X %0.2X]\n",
             i, ArrLabels[i].name, ArrLabels[i].num,
             ((unsigned char*) &ArrLabels[i].num)[0],
             ((unsigned char*) &ArrLabels[i].num)[1],

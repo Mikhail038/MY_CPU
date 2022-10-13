@@ -8,24 +8,20 @@
 
 //TODO jump labels
 
-typedef struct
-{
-    ECommandNums  num;
-    char          name[10];
-    int           args;
-} StructCommands;
+//static int ROUND = 1;
+
+// typedef struct
+// {
+//     ECommandNums  num;
+//     char          name[10];
+//     int           args;
+// } StructCommands;
 
 
 
-#define DEF_CMD(name, num) \
-    {name, #name},
+//extern StructCommands ArrCommands[AmntCommands];
 
-static const StructCommands ArrCommands[AmntCommands] =
-{
-    #include "def_asm.h"
-    {dvd, "div"}
-};
-
+static StructLabels ArrLabels[15] = {};
 
 int read_array_of_code (FILE* Bin, StructMachineCode* Code)
 {
@@ -35,7 +31,7 @@ int read_array_of_code (FILE* Bin, StructMachineCode* Code)
     Code->ArrCode = (unsigned char*) calloc (Code->size * 2, sizeof (*Code->ArrCode));
     fread (Code->ArrCode, Code->size, sizeof (*Code->ArrCode), Bin);
 
-    //printf ("%0.2x %d", Code->ArrCode[Code->ip], Code->ip);
+    //printf ("%0.2X %d", Code->ArrCode[Code->ip], Code->ip);
 
     return 0;
 }
@@ -49,7 +45,7 @@ int check_passport (FILE* Bin, StructMachineCode* Code)
     fread (&Code->version,   1, sizeof (Code->version),   Bin);
     fread (&Code->size,      1, sizeof (Code->size),      Bin);
 
-    // printf ("%0.2x %0.2x   %0.2x %0.2x %0.2x %0.2x (%d)\n", Code->sygnature, Code->version,
+    // printf ("%0.2X %0.2X   %0.2X %0.2X %0.2X %0.2X (%d)\n", Code->sygnature, Code->version,
     //  ((unsigned char*) &Code->size)[0],  ((unsigned char*) &Code->size)[1],
     //  ((unsigned char*) &Code->size)[2],  ((unsigned char*) &Code->size)[3], Code->size);
 
@@ -71,54 +67,73 @@ int make_text_from_code (StructDisasm* Array, StructMachineCode* Code)
 }
 
 
+#define DEF_CMD(name, e_num, num, f_proc, f_parse, f_reparse)\
+    case e_num: \
+        f_reparse
+
 int read_command (StructDisasm* Array, StructMachineCode* Code)
 {
-    int marker = 0;
+    // for (int i = 0; i < 15; i++)
+    // {
+    //     if ((Code->ArrCode[Code->ip] == ArrLabels[i]) && (ROUND == 1))
+    //     {
+    //
+    //     }
+    // }
 
-    marker = Code->ArrCode[Code->ip] & 31;
+    int marker = Code->ArrCode[Code->ip] & 31;
 
     for (int i = 0;  i < AmntCommands; i++)
     {
         if (ArrCommands[i].num == marker)
         {
-            if ((marker == hlt) || (marker == ret ) || ((marker >= add) && (marker <= dup)))
+            switch (marker)
             {
-                add_to_array (Array, ArrCommands[i].name);
-                Code->ip++;
-                Array->Buffer[Array->pointer] = '\n';
-                Array->pointer++;
+                #include "commands.h"
+                default:
+                    printf ("default error!\n");
+                    return 1;
+            }
+//
+//             if ((marker == hlt) || (marker == ret ) || ((marker >= add) && (marker <= dup)))
+//             {
+//                 add_to_array (Array, ArrCommands[i].name);
+//                 Code->ip++;
+//                 Array->Buffer[Array->pointer] = '\n';
+//                 Array->pointer++;
+//
+//                 if (marker == hlt)
+//                 {
+//                     Array->Buffer[Array->pointer] = '\n';
+//                     Array->pointer++;
+//                 }
+//
+//                 return 0;
+//             }
+//             else if ((marker == pop) || (marker == push))
+//             {
+//                 add_to_array (Array, ArrCommands[i].name);
+//                 reparse_push_or_pop (Array, Code, ArrCommands[i].name);
+//                 return 0;
+//             }
+//             else if ((marker == jump) || (marker == call))
+//             {
+//                 add_to_array (Array, ArrCommands[i].name);
+//                 reparse_jump (Array, Code, ArrCommands[i].name);
+//                 return 0;
+//             }
+//             else
+//             {
+//                 printf ("default error! marker %d\n", marker);
+//                 exit(0);
 
-                if (marker == hlt)
-                {
-                    Array->Buffer[Array->pointer] = '\n';
-                    Array->pointer++;
-                }
-
-                return 0;
-            }
-            else if ((marker == pop) || (marker == push))
-            {
-                add_to_array (Array, ArrCommands[i].name);
-                reparse_push_or_pop (Array, Code, ArrCommands[i].name);
-                return 0;
-            }
-            else if ((marker == jump) || (marker == call))
-            {
-                add_to_array (Array, ArrCommands[i].name);
-                reparse_jump (Array, Code, ArrCommands[i].name);
-                return 0;
-            }
-            else
-            {
-                printf ("default error! marker %d\n", marker);
-                exit(0);
-            }
         }
     }
     printf ("Unknown Command! marker = %d ip %d\n", marker, Code->ip);
 
     return 1;
 }
+#undef DEF_CMD
 
 void add_to_array (StructDisasm* Array, const char* line)
 {

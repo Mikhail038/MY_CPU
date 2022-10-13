@@ -19,6 +19,7 @@ POP_CMD (2,
     pop_from_stack (CPU->stack, &CPU->Regs[i - 1]);
 
     pop_log(CPU->Regs[i - 1]);
+    //printf ("%0.4d poped in reg %lg\n", CPU->ip, CPU->Regs[i - 1]);
 }) //pop in register
 
 POP_CMD (4,

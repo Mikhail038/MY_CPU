@@ -9,43 +9,43 @@ all: DO
 
 DO: DO_ASM DO_PROC DO_DISASM
 
-DO_PROC: O/m_proc.o O/proc.o O/stack.o
-	g++ O/m_proc.o O/proc.o O/stack.o -o proc $(CXX_FLAGS)
+DO_PROC: OBJECTS/m_proc.o OBJECTS/proc.o OBJECTS/stack.o
+	g++ OBJECTS/m_proc.o OBJECTS/proc.o OBJECTS/stack.o -o proc $(CXX_FLAGS)
 
-O/m_proc.o: m_proc.cpp
-	g++ -c -o O/m_proc.o m_proc.cpp $(CXX_FLAGS)
+OBJECTS/m_proc.o: m_proc.cpp
+	g++ -c -o OBJECTS/m_proc.o m_proc.cpp $(CXX_FLAGS)
 
-O/proc.o: proc.cpp
-	g++ -c -o O/proc.o proc.cpp $(CXX_FLAGS)
-
-
-
-O/stack.o: stack.cpp
-	g++ -c -o O/stack.o stack.cpp $(CXX_FLAGS)
+OBJECTS/proc.o: proc.cpp
+	g++ -c -o OBJECTS/proc.o proc.cpp $(CXX_FLAGS)
 
 
 
-DO_ASM: O/m_asm.o O/asm.o O/stack.o
-	g++ O/m_asm.o O/asm.o O/stack.o -o asm $(CXX_FLAGS)
-
-O/m_asm.o: m_asm.cpp
-	g++ -c -o O/m_asm.o m_asm.cpp $(CXX_FLAGS)
-
-O/asm.o: asm.cpp
-	g++ -c -o O/asm.o asm.cpp $(CXX_FLAGS)
+OBJECTS/stack.o: stack.cpp
+	g++ -c -o OBJECTS/stack.o stack.cpp $(CXX_FLAGS)
 
 
 
-DO_DISASM: O/m_disasm.o O/disasm.o O/stack.o
-	g++ O/m_disasm.o O/disasm.o O/stack.o -o disasm $(CXX_FLAGS)
+DO_ASM: OBJECTS/m_asm.o OBJECTS/asm.o OBJECTS/stack.o
+	g++ OBJECTS/m_asm.o OBJECTS/asm.o OBJECTS/stack.o -o asm $(CXX_FLAGS)
 
-O/m_disasm.o: m_disasm.cpp
-	g++ -c -o O/m_disasm.o m_disasm.cpp $(CXX_FLAGS)
+OBJECTS/m_asm.o: m_asm.cpp
+	g++ -c -o OBJECTS/m_asm.o m_asm.cpp $(CXX_FLAGS)
 
-O/disasm.o: disasm.cpp
-	g++ -c -o O/disasm.o disasm.cpp $(CXX_FLAGS)
+OBJECTS/asm.o: asm.cpp
+	g++ -c -o OBJECTS/asm.o asm.cpp $(CXX_FLAGS)
+
+
+
+DO_DISASM: OBJECTS/m_disasm.o OBJECTS/disasm.o OBJECTS/stack.o
+	g++ OBJECTS/m_disasm.o OBJECTS/disasm.o OBJECTS/stack.o -o disasm $(CXX_FLAGS)
+
+OBJECTS/m_disasm.o: m_disasm.cpp
+	g++ -c -o OBJECTS/m_disasm.o m_disasm.cpp $(CXX_FLAGS)
+
+OBJECTS/disasm.o: disasm.cpp
+	g++ -c -o OBJECTS/disasm.o disasm.cpp $(CXX_FLAGS)
 
 
 
 clean:
-	cd O; rm -rf *.o; cd -
+	cd OBJECTS; rm -rf *.o; cd -
