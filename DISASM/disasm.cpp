@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "stack.h"
-#include "asm.h"
+
 #include "disasm.h"
 
 
@@ -41,9 +40,12 @@ int check_passport (FILE* Bin, StructMachineCode* Code)
     MCA (Bin  != NULL, -1);
     MCA (Code != NULL, -2);
 
+    int vram_size = 0;
+
     fread (&Code->sygnature, 1, sizeof (Code->sygnature), Bin);
     fread (&Code->version,   1, sizeof (Code->version),   Bin);
     fread (&Code->size,      1, sizeof (Code->size),      Bin);
+    fread (&vram_size, 1, sizeof (vram_size), Bin);
 
     // printf ("%0.2X %0.2X   %0.2X %0.2X %0.2X %0.2X (%d)\n", Code->sygnature, Code->version,
     //  ((unsigned char*) &Code->size)[0],  ((unsigned char*) &Code->size)[1],
@@ -89,7 +91,7 @@ int read_command (StructDisasm* Array, StructMachineCode* Code)
         {
             switch (marker)
             {
-                #include "commands.h"
+                #include "../ASM/commands.h"
                 default:
                     printf ("default error!\n");
                     return 1;
@@ -218,7 +220,7 @@ int reparse_jump (StructDisasm* Array, StructMachineCode* Code, const char* line
     Array->Buffer[Array->pointer] = '\n';
     Array->pointer++;
 
-    return -1;
+    return 0;
 }
 
 void print_array (StructDisasm* Array)
@@ -254,7 +256,7 @@ void reparse_int (StructDisasm* Array, StructMachineCode* Code)
         ((unsigned char*) &argument)[i] = Code->ArrCode[Code->ip];
         Code->ip++;
     }
-    char buf[10];
+    char buf[20];
 
     sprintf (buf, "%d\0", argument);
 
@@ -276,7 +278,7 @@ void reparse_double (StructDisasm* Array, StructMachineCode* Code)
         ((unsigned char*) &argument)[i] = Code->ArrCode[Code->ip];
         Code->ip++;
     }
-    char buf[20];
+    char buf[40];
 
     sprintf (buf, "%lg\0", argument);
 

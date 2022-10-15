@@ -1,4 +1,4 @@
-#define pop_log(x) do {printf ("%0.4d poped %lg\n", CPU->ip, (x));} while (0)
+#define pop_log(x) //do {printf ("%0.4d poped %lg\n", CPU->ip, (x));} while (0)
 
 
 POP_CMD (0,
@@ -39,6 +39,7 @@ POP_CMD (4,
 POP_CMD (6,
 {
     int ram_array_element_number = (int) CPU->Regs[CPU->Array[CPU->ip] - 1];
+    //printf ("%d %d--\n", CPU->Array[CPU->ip] - 1, ram_array_element_number);
 
     CPU->ip++;
 

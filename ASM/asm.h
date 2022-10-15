@@ -1,6 +1,9 @@
 #ifndef ASM_H
 #define ASM_H
 
+#include "../STACK/stack.h"
+
+
 #define AmntCommands 50
 
 
@@ -33,6 +36,8 @@ typedef struct
     unsigned char* ArrCode;
     unsigned char  sygnature;
     unsigned char  version;
+    int            vram_size_x;
+    int            vram_size_y;
     int            size;
     FILE*          listing_file;
 } StructMachineCode;
@@ -61,7 +66,7 @@ int count_symbols_in_file (FILE* stream);
 void separate_buffer_on_lines (char** ArrLinePtrs, const char* Buffer, int AmntLines);
 
 //======================================================================
-void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode* Code);
+void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode* Code, const char* Filename);
 
 void skip_line (StructSource* Source);
 

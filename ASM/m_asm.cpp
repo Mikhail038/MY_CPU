@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "stack.h"
+
 #include "asm.h"
 
 
 int main (int argc, char** argv)
 {
-    FILE* SourceFile = argc > 1 ? fopen (argv[1], "r") : fopen ("proc.in", "r");
+    FILE* SourceFile = argc > 1 ? fopen (argv[1], "r") : fopen ("code.asm", "rb");
     MCA (SourceFile != NULL, 1);
 
     StructSource Source = {};
@@ -33,12 +33,14 @@ int main (int argc, char** argv)
 
     Code.ip = 0;
 
-    make_array_of_code (Amnt_lines, &Source, &Code);
+    const char* Filename = argc > 3 ? argv[3] : "code.log";
+
+    make_array_of_code (Amnt_lines, &Source, &Code, Filename);
 
     free (Source.Buffer);
 
 
-    FILE* Bin = argc > 2 ? fopen (argv[2], "wb") : fopen ("proc.out", "wb");
+    FILE* Bin = argc > 2 ? fopen (argv[2], "wb") : fopen ("code.mc", "wb");
 
     make_bin_file (Bin, &Code);
     //fwrite (ArrCode, sizeof (int), MaxSize, Bin);

@@ -49,14 +49,24 @@ static const StructError ArrStructErr[128] =
     {WrongDataHash,          "Hash-check failed, data is corrupted"}
 };
 
+static const int REGS_CONST = 5;
+
+static int start = 100;
+
+static int width = 0;
+static int height = 0;
+static int vram_size = 0;
+
+
 void cpu_constructor (FILE* Bin, StructCPU* CPU)
 {
     check_passport (Bin, CPU);
 
     read_array_of_code (Bin, CPU);
 
-    CPU->Regs = (double*) calloc (5, sizeof (*CPU->RAM));
-    CPU->RAM  = (double*) calloc (10, sizeof (*CPU->RAM));
+    CPU->Regs = (double*) calloc (REGS_CONST, sizeof (*CPU->RAM));
+    //printf ("ram size %d %d\n", start + vram_size + 20, vram_size);
+    CPU->RAM  = (double*) calloc (start + vram_size + 10, sizeof (*CPU->RAM));
 
     CPU->stack = (StructStack*) calloc (1, sizeof (StructStack));
     CPU->addres_stack = (StructStack*) calloc (1, sizeof (StructStack));
@@ -73,12 +83,17 @@ int check_passport (FILE* Bin, StructCPU* CPU)
     MCA (Bin  != NULL, -1);
     MCA (CPU != NULL, -2);
 
-    unsigned char sygnature;
-    unsigned char version;
+    unsigned char sygnature = 0;
+    unsigned char version = 0;
 
     fread (&sygnature, 1, sizeof (sygnature), Bin);
     fread (&version,   1, sizeof (version),   Bin);
-    fread (&CPU->size, 1, sizeof (CPU->size),      Bin);
+    fread (&CPU->size, 1, sizeof (CPU->size), Bin);
+    fread (&vram_size, 1, sizeof (vram_size), Bin);
+
+    MCA (CPU->size > 0, 1);
+    MCA (vram_size > 0, 2);
+
 
     if (sygnature != 218)
     {
@@ -123,7 +138,7 @@ int execute_code (StructCPU* CPU)
         }
         else if (i == 1)
         {
-            printf ("really halted!\n");
+            printf ("really halted! ip = %d \n", CPU->ip);
             return 0;
         }
 
@@ -151,7 +166,7 @@ int execute_command (StructCPU* CPU)
         {
             switch (marker)
             {
-                #include "commands.h"
+                #include "../ASM/commands.h"
                 default:
                     printf ("default error!\n");
                     exit (0);
@@ -175,7 +190,6 @@ void cpu_destructor (StructCPU* CPU)
 
     free (CPU->stack);
     free (CPU->addres_stack);
-
 
     return;
 }

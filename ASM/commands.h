@@ -1,11 +1,11 @@
  #define POP(name) \
     double name = 0; \
     pop_from_stack (CPU->stack, &name); \
-    printf ("   poped %lg\n", name);
+    //printf ("   poped %lg\n", name);
 
  #define PUSH(name) \
     push_in_stack (CPU->stack, name); \
-    printf ("   pushed %lg\n", name);
+    //printf ("   pushed %lg\n", name);
 
 
 //---------------------------------------------------------------------------
@@ -45,14 +45,15 @@
         ((unsigned char*) &label)[i] = CPU->Array[CPU->ip]; \
         CPU->ip++; \
     } \
-    printf ("   jumped %d from %d\n", label, CPU->ip); \
     CPU->ip = label;
+
+    /*printf ("   jumped %d from %d\n", label, CPU->ip);*/
 
 //===========================================================================
 
 DEF_CMD ("hlt", hlt, 0,
 {
-    printf ("halted in %d\n", CPU->ip);
+    //printf ("halted in %d\n", CPU->ip);
     return 1;
 },
 {
@@ -76,7 +77,7 @@ DEF_CMD ("push", push, 1,
 },
 {
     //printf ("!!!");
-    if (parse_push_or_pop (Source, Code, "pop") != 0)
+    if (parse_push_or_pop (Source, Code, "push") != 0)
     {
         return -1;
     }
@@ -182,7 +183,7 @@ DEF_CMD ("inp", inp, 7,
 
     push_in_stack (CPU->stack, x);
 
-    printf ("   inputed %lg\n", x);
+    //printf ("   inputed %lg\n", x);
 
     CPU->ip++;
 },
@@ -379,6 +380,8 @@ DEF_CMD ("jne", jne, 17,
 
 DEF_CMD ("call", call, 18,
 {
+    //printf ("!\n");
+
     int label = 0;
 
     CPU->ip++;
@@ -390,7 +393,7 @@ DEF_CMD ("call", call, 18,
     }
     push_in_stack (CPU->addres_stack, CPU->ip);
 
-    printf ("   called %d from %d\n", label, CPU->ip);
+    //printf ("   called %d from %d\n", label, CPU->ip);
     CPU->ip = label;
 },
 {
@@ -408,7 +411,7 @@ DEF_CMD ("ret", ret, 19,
 
     int label = (int) d_label;
 
-    printf ("   returned %d from %d\n", label, CPU->ip);
+    //printf ("   returned %d from %d\n", label, CPU->ip);
     CPU->ip = label;
 },
 {
@@ -471,7 +474,22 @@ DEF_CMD ("cos", m_cos, 22,
     REP_STD
 })
 
-DEF_CMD ("rnd", rnd, 23,
+DEF_CMD ("ceil", m_ceil, 23,
+{
+    POP (a);
+
+    PUSH (ceil (a));
+
+    CPU->ip++;
+},
+{
+    PRS_STD
+},
+{
+    REP_STD
+})
+
+DEF_CMD ("floor", m_floor, 24,
 {
     POP (a);
 
@@ -486,7 +504,126 @@ DEF_CMD ("rnd", rnd, 23,
     REP_STD
 })
 
-DEF_CMD ("vsetx", vsetx, 24,
+DEF_CMD ("vsetx", vsetx, 25,
+{
+    CPU->ip++;
+
+    for (int i = 0; i < sizeof (int); i++)
+    {
+        ((unsigned char*) &width)[i] = CPU->Array[CPU->ip];
+        CPU->ip++;
+    }
+
+    //printf ("   set vx %d\n", width);
+},
+{
+    seek (Source);
+
+    char* Name = &(Source->Buffer[Source->pointer]);
+
+    int i = 0;
+    for (; i < Source->amnt_symbols; i++)
+    {
+        if ((Name[i] == ' ') || (Name[i] == '\n') || (Name[i] == '\0'))
+        {
+            Name[i] = '\0';
+            break;
+        }
+    }
+
+    if ((Name[0] <= '9') && ((Name[0] >= '1')))
+    {
+        parse_int (Source, Code, "vsetx");
+    }
+
+    return 0;
+},
+{
+    add_to_array (Array, ArrCommands[i].name);
+
+    Code->ip++;
+
+    reparse_int (Array, Code);
+
+    Array->Buffer[Array->pointer] = '\n';
+    Array->pointer++;
+})
+
+DEF_CMD ("vsety", vsety, 26,
+{
+    CPU->ip++;
+
+    for (int i = 0; i < sizeof (int); i++)
+    {
+        ((unsigned char*) &height)[i] = CPU->Array[CPU->ip];
+        CPU->ip++;
+    }
+
+    //printf ("   set vy %d\n", height);
+},
+{
+    seek (Source);
+
+    char* Name = &(Source->Buffer[Source->pointer]);
+
+    int i = 0;
+    for (; i < Source->amnt_symbols; i++)
+    {
+        if ((Name[i] == ' ') || (Name[i] == '\n') || (Name[i] == '\0'))
+        {
+            Name[i] = '\0';
+            break;
+        }
+    }
+
+    if ((Name[0] <= '9') && ((Name[0] >= '1')))
+    {
+        parse_int (Source, Code, "vsety");
+    }
+
+    return 0;
+},
+{
+    add_to_array (Array, ArrCommands[i].name);
+
+    Code->ip++;
+
+    reparse_int (Array, Code);
+
+    Array->Buffer[Array->pointer] = '\n';
+    Array->pointer++;
+
+    return 0;
+})
+
+DEF_CMD ("updscr", updscr, 27,
+{
+    for (int i = 0; i < height - 1; i++)
+    {
+        for (int j = 0; j < width - 1; j++)
+        {
+            if (CPU->RAM[start + j +  width * i ] >= ' ')
+            {
+                printf ("%c", (char) CPU->RAM[start + j + width * i]);
+            }
+            else
+            {
+                printf (".");
+            }
+        }
+        printf("\n");
+    }
+
+    CPU->ip++;
+},
+{
+    PRS_STD
+},
+{
+    REP_STD
+})
+
+DEF_CMD ("clrscr", clrscr, 28,
 {
     POP (a);
 
@@ -501,7 +638,7 @@ DEF_CMD ("vsetx", vsetx, 24,
     REP_STD
 })
 
-DEF_CMD ("vsety", vsety, 25,
+DEF_CMD ("clrbuf", clrbuf, 29,
 {
     POP (a);
 
@@ -516,41 +653,13 @@ DEF_CMD ("vsety", vsety, 25,
     REP_STD
 })
 
-DEF_CMD ("updscr", updscr, 26,
+DEF_CMD ("swap", swap, 30,
 {
     POP (a);
+    POP (b);
 
-    PUSH (floor (a));
-
-    CPU->ip++;
-},
-{
-    PRS_STD
-},
-{
-    REP_STD
-})
-
-DEF_CMD ("clrscr", clrscr, 27,
-{
-    POP (a);
-
-    PUSH (floor (a));
-
-    CPU->ip++;
-},
-{
-    PRS_STD
-},
-{
-    REP_STD
-})
-
-DEF_CMD ("clrbuf", clrbuf, 28,
-{
-    POP (a);
-
-    PUSH (floor (a));
+    PUSH(a);
+    PUSH(b);
 
     CPU->ip++;
 },

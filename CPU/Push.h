@@ -1,4 +1,4 @@
-#define push_log do {printf ("%0.4d pushed %lg\n", CPU->ip, x);} while (0)
+#define push_log //do {printf ("%0.4d pushed %lg\n", CPU->ip, x);} while (0)
 
 PUSH_CMD (0,
 {

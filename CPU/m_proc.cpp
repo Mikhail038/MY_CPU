@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "stack.h"
+
 #include "proc.h"
 
 
 int main (int argc, char** argv)
 {
-    FILE* Bin = argc > 1 ? fopen (argv[1], "r") : fopen ("proc.out", "r");
+    FILE* Bin = argc > 1 ? fopen (argv[1], "r") : fopen ("code.mc", "r");
     MCA (Bin != NULL, 1);
 
     StructCPU CPU = {};

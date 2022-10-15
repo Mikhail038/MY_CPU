@@ -1,8 +1,8 @@
 #ifndef DISASM_H
 #define DISASM_H
 
-#include "stack.h"
-#include "asm.h"
+#include "../STACK/stack.h"
+#include "../ASM/asm.h"
 
 typedef struct
 {

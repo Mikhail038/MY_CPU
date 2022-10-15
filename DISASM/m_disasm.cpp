@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "asm.h"
+
 #include "disasm.h"
-#include "stack.h"
+
 
 
 
 int main (int argc, char** argv)
 {
-    FILE* Bin = argc > 1 ? fopen (argv[1], "r") : fopen ("proc.out", "r");
+    FILE* Bin = argc > 1 ? fopen (argv[1], "r") : fopen ("code.mc", "r");
     MCA (Bin != NULL, 1);
 
     StructMachineCode Code = {};
@@ -25,7 +25,7 @@ int main (int argc, char** argv)
 
     make_text_from_code (&Array, &Code);
 
-    FILE* Text = argc > 2 ? fopen (argv[2], "wb") : fopen ("disassmebled.in", "wb");
+    FILE* Text = argc > 2 ? fopen (argv[2], "wb") : fopen ("code.disasm", "wb");
 
     print_text_in_file (Text, &Array);
 

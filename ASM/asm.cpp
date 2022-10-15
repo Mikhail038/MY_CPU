@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "stack.h"
 #include "asm.h"
 
 #define KRED "\x1B[31m"
@@ -13,6 +12,7 @@
 static int ROUND = 1;
 
 //DO NOT BEGIN LABELS AFTER EMPTY POP WITH LETTER R
+//DO NOT NAME LABEL "LABEL"
 
 //REGISTER 64 MEMORY 128
 
@@ -128,15 +128,20 @@ int close_listing_file (StructMachineCode* Code)
 {
     MCA (Code->listing_file != NULL, 1);
 
+    int size = Code->vram_size_x * Code->vram_size_y;
+
     fprintf (Code->listing_file,
              "---------------------------------------------------------------\n"
-             "sygnature 0x%0.2X  |  version 0x%0.2X (%d)  |  size [%0.2X %0.2X %0.2X %0.2X] (%d)\n"
+             "sygnature 0x%0.2X | version 0x%0.2X (%d) |"
+             " size [%0.2X %0.2X %0.2X %0.2X] (%d) | VRAM-size [%0.2X %0.2X %0.2X %0.2X] (%d)\n"
              "---------------------------------------------------------------\n"
              "Compilation ended: %s %s\n"
              "===============================================================\n"
             ,Code->sygnature, Code->version, Code->version,
             ((unsigned char*) &Code->size)[0], ((unsigned char*) &Code->size)[1],
             ((unsigned char*) &Code->size)[2], ((unsigned char*) &Code->size)[3], Code->size,
+            ((unsigned char*) &size)[0], ((unsigned char*) &size)[1],
+            ((unsigned char*) &size)[2], ((unsigned char*) &size)[3], size,
              __DATE__, __TIME__);
 
     fclose (Code->listing_file);
@@ -145,7 +150,7 @@ int close_listing_file (StructMachineCode* Code)
 
 
 
-void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode* Code)
+void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode* Code, const char* Filename)
 {
     Code->ip = 0;
     Source->pointer  = 0;
@@ -153,10 +158,11 @@ void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode
 
     if (ROUND < 2)
     {
-        open_listing_file ("proc.log", Code);
+        open_listing_file (Filename, Code);
     }
 
-    for (int LineNum = 0; LineNum < Source->amnt_lines * 2; LineNum++)
+    int LineNum = 0;
+    for (; LineNum < Source->amnt_lines * 8; LineNum++)
     {
         if (seek (Source) == 0)
         {
@@ -167,6 +173,7 @@ void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode
             }
         }
     }
+    //printf ("%d %d\n", LineNum, Source->amnt_lines);
 
     Code->sygnature = 218;
     Code->version   = 1;
@@ -180,7 +187,7 @@ void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode
     if (ROUND < 2)
     {
         ROUND++;
-        make_array_of_code (Amnt_lines, Source, Code);
+        make_array_of_code (Amnt_lines, Source, Code, Filename);
     }
 
     return;
@@ -349,11 +356,11 @@ int parse_push_or_pop (StructSource* Source, StructMachineCode* Code, const char
     {
         parse_op (Source, Code, Command);
     }
-    else if (Name[0] == 'r')
+    else if ((Name[0] == 'r') && (Name[2] == 'x'))
     {
         parse_str (Source, Code, Command);
     }
-    else if ((Command = "push") && (Name[0] <= '9') && ((Name[0] >= '1')))
+    else if ((Command = "push") && (Name[0] <= '9') && ((Name[0] >= '0')))
     {
         parse_double (Source, Code, Command);
     }
@@ -440,6 +447,21 @@ void parse_int (StructSource* Source, StructMachineCode* Code,  const char* Comm
         Code->ArrCode[Code->ip] = ((unsigned char*) &i_argument)[j];
         print_element (Code);
         Code->ip++;
+    }
+
+    if (strcmp (Command, "vsetx") == 0)
+    {
+        if (i_argument > Code->vram_size_x)
+        {
+            Code->vram_size_x = i_argument;
+        }
+    }
+    if(strcmp (Command, "vsety") == 0)
+    {
+        if (i_argument > Code->vram_size_y)
+        {
+            Code->vram_size_y = i_argument;
+        }
     }
 
     //printf ("'%s' %d %d\n", Name, length, i_argument);
@@ -660,9 +682,12 @@ void make_bin_file (FILE* Bin, StructMachineCode* Code)
 
     //printf ("%0.2X %0.2X %0.2X\n", Sgn, Version, Amount);
 
+    int size = Code->vram_size_x * Code->vram_size_y;
+
     fwrite (&Code->sygnature, 1, sizeof (Code->sygnature), Bin);
-    fwrite (&Code->version, 1, sizeof (Code->version), Bin);
-    fwrite (&Code->size, 1, sizeof (Code->size), Bin);
+    fwrite (&Code->version,   1, sizeof (Code->version),   Bin);
+    fwrite (&Code->size,      1, sizeof (Code->size),      Bin);
+    fwrite (&size,            1, sizeof (size),            Bin);
 
     fwrite (Code->ArrCode, Code->ip, sizeof (*Code->ArrCode), Bin);
 

@@ -2,8 +2,8 @@
 #define PROC_H
 
 #include <math.h>
-#include "stack.h"
-#include "asm.h"
+#include "../STACK/stack.h"
+#include "../ASM/asm.h"
 
 typedef struct
 {
@@ -14,6 +14,7 @@ typedef struct
     unsigned char* Array;
     double*        RAM;
     double*        Regs;
+    double*        RAM;
 } StructCPU;
 
 
