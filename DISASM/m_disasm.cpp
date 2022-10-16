@@ -8,7 +8,7 @@
 
 int main (int argc, char** argv)
 {
-    FILE* Bin = argc > 1 ? fopen (argv[1], "r") : fopen ("code.mc", "r");
+    FILE* Bin = argc > 1 ? fopen (argv[1], "rb") : fopen ("code.mc", "r");
     MCA (Bin != NULL, 1);
 
     StructMachineCode Code = {};

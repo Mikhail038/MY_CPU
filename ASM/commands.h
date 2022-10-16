@@ -1,7 +1,8 @@
  #define POP(name) \
     double name = 0; \
+     /*printf ("  get poped %lg ip %d \n", name, CPU->ip);*/ \
     pop_from_stack (CPU->stack, &name); \
-    //printf ("   poped %lg\n", name);
+    //printf ("   poped %lg ip %d \n", name, CPU->ip);
 
  #define PUSH(name) \
     push_in_stack (CPU->stack, name); \
@@ -160,7 +161,12 @@ DEF_CMD ("div", m_div, 6,
     POP (b);
 
 
-    assert (a != 0);
+    //assert (a != 0);
+    if (a == 0)
+    {
+        printf ("my ass! (zero div) ip = %d\n", CPU->ip);
+        //exit (0);
+    }
 
     PUSH (b / a);
 
@@ -210,7 +216,33 @@ DEF_CMD ("out", out, 8,
 
 DEF_CMD ("dump", dump, 9,
 {
-    printf ("Work in progress\n");
+    //printf ("Work in progress\n");
+    int min = (CPU->ip > 5) ? CPU->ip - 5 : 0;
+    int max = (CPU->ip < (CPU->size - 5)) ? CPU->ip + 5 : CPU->size;
+
+    for (int i = min; i < max; i++)
+    {
+        printf (KNRM"%0.4d    %0.2X", i, CPU->Array[i]);
+
+        if (i == CPU->ip)
+        {
+            printf (KRED" <");
+        }
+
+        printf ("\n");
+    }
+
+    for (int i = 0; i < CPU->stack->size; i++)
+    {
+        printf ("stack %0.4d    %lg\n", i, CPU->stack->data[i]);
+    }
+
+    for (int i = 0; i < CPU->addres_stack->size; i++)
+    {
+        printf ("address stack %0.4d    %lg\n", i, CPU->addres_stack->data[i]);
+    }
+
+    exit (0); //////////////////////////
     CPU->ip++;
 },
 {
@@ -221,7 +253,7 @@ DEF_CMD ("dump", dump, 9,
 })
 
 
-DEF_CMD ("dup", dup, 10,
+DEF_CMD ("dup", m_dup, 10,
 {
     POP (a);
 
@@ -625,24 +657,8 @@ DEF_CMD ("updscr", updscr, 27,
 
 DEF_CMD ("clrscr", clrscr, 28,
 {
-    POP (a);
-
-    PUSH (floor (a));
-
-    CPU->ip++;
-},
-{
-    PRS_STD
-},
-{
-    REP_STD
-})
-
-DEF_CMD ("clrbuf", clrbuf, 29,
-{
-    POP (a);
-
-    PUSH (floor (a));
+    //usleep (0.00001);
+    system ("clear");
 
     CPU->ip++;
 },
@@ -653,22 +669,21 @@ DEF_CMD ("clrbuf", clrbuf, 29,
     REP_STD
 })
 
-DEF_CMD ("swap", swap, 30,
-{
-    POP (a);
-    POP (b);
+// DEF_CMD ("clrbuf", clrbuf, 29,
+// {
+//     POP (a);
+//
+//     PUSH (floor (a));
+//
+//     CPU->ip++;
+// },
+// {
+//     PRS_STD
+// },
+// {
+//     REP_STD
+// })
 
-    PUSH(a);
-    PUSH(b);
-
-    CPU->ip++;
-},
-{
-    PRS_STD
-},
-{
-    REP_STD
-})
 
 #undef STD_JUMP
 

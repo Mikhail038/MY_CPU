@@ -20,6 +20,5 @@ int main (int argc, char** argv)
 
     cpu_destructor (&CPU);
 
-
     return 0;
 }

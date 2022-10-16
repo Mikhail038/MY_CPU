@@ -17,7 +17,6 @@ int read_array_of_code (FILE* Bin, StructMachineCode* Code);
 
 
 
-
 int make_text_from_code (StructDisasm* Array, StructMachineCode* Code);
 
 int read_command (StructDisasm* Array, StructMachineCode* Code);
@@ -34,7 +33,7 @@ void print_array (StructDisasm* Array);
 
 void reparse_reg (StructDisasm* Array, StructMachineCode* Code);
 
-void reparse_int (StructDisasm* Array, StructMachineCode* Code);
+int reparse_int (StructDisasm* Array, StructMachineCode* Code);
 
 void reparse_double (StructDisasm* Array, StructMachineCode* Code);
 

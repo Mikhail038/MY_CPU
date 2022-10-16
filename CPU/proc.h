@@ -12,7 +12,6 @@ typedef struct
     StructStack*   stack;
     StructStack*   addres_stack;
     unsigned char* Array;
-    double*        RAM;
     double*        Regs;
     double*        RAM;
 } StructCPU;

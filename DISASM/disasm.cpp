@@ -20,7 +20,9 @@
 
 //extern StructCommands ArrCommands[AmntCommands];
 
-static StructLabels ArrLabels[15] = {};
+static int ROUND = 0;
+
+static StructLabels ArrLabels[LabelsAmnt] = {};
 
 int read_array_of_code (FILE* Bin, StructMachineCode* Code)
 {
@@ -45,7 +47,19 @@ int check_passport (FILE* Bin, StructMachineCode* Code)
     fread (&Code->sygnature, 1, sizeof (Code->sygnature), Bin);
     fread (&Code->version,   1, sizeof (Code->version),   Bin);
     fread (&Code->size,      1, sizeof (Code->size),      Bin);
-    fread (&vram_size, 1, sizeof (vram_size), Bin);
+    fread (&vram_size,       1, sizeof (vram_size),       Bin);
+
+
+    if (Code->sygnature != 218)
+    {
+        printf ("Wrong sygnature!\n");
+        exit (0);
+    }
+    if (Code->version != 1)
+    {
+        printf ("Wrong version!\n");
+        exit (0);
+    }
 
     // printf ("%0.2X %0.2X   %0.2X %0.2X %0.2X %0.2X (%d)\n", Code->sygnature, Code->version,
     //  ((unsigned char*) &Code->size)[0],  ((unsigned char*) &Code->size)[1],
@@ -56,6 +70,9 @@ int check_passport (FILE* Bin, StructMachineCode* Code)
 
 int make_text_from_code (StructDisasm* Array, StructMachineCode* Code)
 {
+    Array->pointer = 0;
+    Code->ip = 0;
+
     for (; Code->ip < Code->size;)
     {
         if (read_command (Array, Code) == 1)
@@ -64,6 +81,21 @@ int make_text_from_code (StructDisasm* Array, StructMachineCode* Code)
             return 1;
         }
     }
+
+    if (ROUND > 1)
+    {
+        return 0;
+    }
+    else
+    {
+        ROUND++;
+        make_text_from_code (Array, Code);
+    }
+
+    // for (int i = 0; i < LabelsAmnt; i++)
+    // {
+    //     printf ("%d  %s\n", ArrLabels[i].num, ArrLabels[i].name);
+    // }
 
     return 0;
 }
@@ -75,13 +107,26 @@ int make_text_from_code (StructDisasm* Array, StructMachineCode* Code)
 
 int read_command (StructDisasm* Array, StructMachineCode* Code)
 {
-    // for (int i = 0; i < 15; i++)
-    // {
-    //     if ((Code->ArrCode[Code->ip] == ArrLabels[i]) && (ROUND == 1))
-    //     {
-    //
-    //     }
-    // }
+    for (int i = 0; i < LabelsAmnt; i++)
+    {
+        if (Code->ip == ArrLabels[i].num)
+        {
+            int length = strlen (ArrLabels[i].name);
+
+            for (int j = 0; j < length; j++)
+            {
+                Array->Buffer[Array->pointer] = (ArrLabels[i].name)[j];
+                Array->pointer++;
+            }
+
+            Array->Buffer[Array->pointer] = ':';
+            Array->pointer++;
+
+            Array->Buffer[Array->pointer] = '\n';
+            Array->pointer++;
+        }
+    }
+
 
     int marker = Code->ArrCode[Code->ip] & 31;
 
@@ -96,39 +141,6 @@ int read_command (StructDisasm* Array, StructMachineCode* Code)
                     printf ("default error!\n");
                     return 1;
             }
-//
-//             if ((marker == hlt) || (marker == ret ) || ((marker >= add) && (marker <= dup)))
-//             {
-//                 add_to_array (Array, ArrCommands[i].name);
-//                 Code->ip++;
-//                 Array->Buffer[Array->pointer] = '\n';
-//                 Array->pointer++;
-//
-//                 if (marker == hlt)
-//                 {
-//                     Array->Buffer[Array->pointer] = '\n';
-//                     Array->pointer++;
-//                 }
-//
-//                 return 0;
-//             }
-//             else if ((marker == pop) || (marker == push))
-//             {
-//                 add_to_array (Array, ArrCommands[i].name);
-//                 reparse_push_or_pop (Array, Code, ArrCommands[i].name);
-//                 return 0;
-//             }
-//             else if ((marker == jump) || (marker == call))
-//             {
-//                 add_to_array (Array, ArrCommands[i].name);
-//                 reparse_jump (Array, Code, ArrCommands[i].name);
-//                 return 0;
-//             }
-//             else
-//             {
-//                 printf ("default error! marker %d\n", marker);
-//                 exit(0);
-
         }
     }
     printf ("Unknown Command! marker = %d ip %d\n", marker, Code->ip);
@@ -211,11 +223,45 @@ int reparse_push_or_pop (StructDisasm* Array, StructMachineCode* Code, const cha
     return 0;
 }
 
+
+
 int reparse_jump (StructDisasm* Array, StructMachineCode* Code, const char* line)
 {
     Code->ip++;
 
-    reparse_int (Array, Code);
+    int num = reparse_int (Array, Code);
+
+    char* str = (char*) calloc (15, sizeof (*str));
+    str = strcpy (str, "label");
+    sprintf (&(str[5]), "%d", num);
+
+
+    for (int i = 0; i < LabelsAmnt; i++)
+    {
+        if (ArrLabels[i].num == num)
+        {
+            break;
+        }
+
+        if (ArrLabels[i].num == -1)
+        {
+            //printf ("%d %d\n", i, ArrLabels[i].num);
+            ArrLabels[i].name = (char*) calloc (15, sizeof (*ArrLabels[i].name));
+            ArrLabels[i].name = strcpy (ArrLabels[i].name, str);
+            ArrLabels[i].num = num;
+            //printf ("%-3d %-3d %s\n", i, ArrLabels[i].num , ArrLabels[i].name);
+            // fprintf (Code->listing_file, "added label: %s %d  [%0.2X %0.2X %0.2X %0.2X]\n", Name, Code->ip,
+            // ((unsigned char*) &Code->ip)[0],
+            // ((unsigned char*) &Code->ip)[1],
+            // ((unsigned char*) &Code->ip)[2],
+            // ((unsigned char*) &Code->ip)[3]
+            // );
+
+            break;
+        }
+    }
+
+    free (str);
 
     Array->Buffer[Array->pointer] = '\n';
     Array->pointer++;
@@ -247,7 +293,7 @@ void reparse_reg (StructDisasm* Array, StructMachineCode* Code)
     Array->pointer++;
 }
 
-void reparse_int (StructDisasm* Array, StructMachineCode* Code)
+int reparse_int (StructDisasm* Array, StructMachineCode* Code)
 {
     int argument = 0;
 
@@ -266,7 +312,7 @@ void reparse_int (StructDisasm* Array, StructMachineCode* Code)
     Array->pointer += length;
     //printf ("!%s!-------------------------------", Array->Buffer);
 
-    return;
+    return argument;
 }
 
 void reparse_double (StructDisasm* Array, StructMachineCode* Code)
@@ -298,4 +344,12 @@ void print_text_in_file (FILE* Text, StructDisasm* Array)
 
     fwrite (Array->Buffer, Array->pointer, sizeof (*Array->Buffer), Text);
     fprintf (Text, "==========================================================\n");
+
+    for (int i = 0; i < LabelsAmnt; i++)
+    {
+        if (ArrLabels[i].num != -1)
+        {
+            free (ArrLabels[i].name);
+        }
+    }
 }

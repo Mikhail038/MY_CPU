@@ -789,6 +789,7 @@ int peek_from_stack (StructStack* stack, StackDataType* x)
     if (stack_is_empty (stack))
     {
         printf ("Stack is empty!\n");
+        exit (0);
     }
     else
     {
@@ -819,6 +820,7 @@ int pop_from_stack (StructStack* stack, StackDataType* x)
     if (stack_is_empty (stack))
     {
         printf ("Stack is empty!\n");
+        exit (0);
     }
     else
     {

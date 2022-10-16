@@ -2,10 +2,16 @@
 #define ASM_H
 
 #include "../STACK/stack.h"
+#include <unistd.h>
+
+#define KRED "\x1B[31m"
+#define KGRN "\x1B[128m"
+#define KBLU "\x1B[34m"
+#define KNRM "\x1B[0m"
 
 
 #define AmntCommands 50
-
+#define LabelsAmnt 30
 
 #define DEF_CMD(name, e_num, num, ...) \
     e_num = num,

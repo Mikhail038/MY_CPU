@@ -143,7 +143,6 @@ int execute_code (StructCPU* CPU)
         }
 
     }
-
     printf ("overflow\n");
     return 2;
 }
@@ -155,12 +154,10 @@ case num: \
 
 int execute_command (StructCPU* CPU)
 {
-    int marker = 0;
+    int marker = CPU->Array[CPU->ip] & 31;
 
     for (int i = 0;  i < AmntCommands; i++)
     {
-        marker = CPU->Array[CPU->ip] & 31;
-
        // printf ("%0.4d %d %d\n", CPU->ip, ArrCommands[i].num, marker);
         if (ArrCommands[i].num == marker)
         {
@@ -177,7 +174,7 @@ int execute_command (StructCPU* CPU)
 
     return -1;
 }
-#undef DEF_CMD(name,num,...)
+#undef DEF_CMD
 
 void cpu_destructor (StructCPU* CPU)
 {

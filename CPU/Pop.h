@@ -4,6 +4,7 @@
 POP_CMD (0,
 {
     double x = 0;
+    //printf ("pop ip %d \n", CPU->ip);
 
     pop_from_stack (CPU->stack, &x);
     pop_log(x);
@@ -12,6 +13,8 @@ POP_CMD (0,
 POP_CMD (2,
 {
     int i = 0;
+    //printf ("pop ip %d \n", CPU->ip);
+
 
     i = CPU->Array[CPU->ip];
     CPU->ip++;
@@ -25,6 +28,8 @@ POP_CMD (2,
 POP_CMD (4,
 {
     int ram_array_element_number = 0;
+    //printf ("pop ip %d \n", CPU->ip);
+
 
     for (int i = 0; i < sizeof (int); i++)
     {
@@ -39,6 +44,8 @@ POP_CMD (4,
 POP_CMD (6,
 {
     int ram_array_element_number = (int) CPU->Regs[CPU->Array[CPU->ip] - 1];
+    //printf ("pop ip %d \n", CPU->ip);
+
     //printf ("%d %d--\n", CPU->Array[CPU->ip] - 1, ram_array_element_number);
 
     CPU->ip++;
