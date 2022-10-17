@@ -222,7 +222,7 @@ DEF_CMD ("dump", dump, 9,
 
     for (int i = min; i < max; i++)
     {
-        printf (KNRM"%0.4d    %0.2X", i, CPU->Array[i]);
+        printf (KNRM"%0.4d    0x%0.2X", i, CPU->Array[i]);
 
         if (i == CPU->ip)
         {
