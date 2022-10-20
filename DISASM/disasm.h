@@ -1,8 +1,8 @@
 #ifndef DISASM_H
 #define DISASM_H
 
-#include "../STACK/stack.h"
-#include "../ASM/asm.h"
+#include "stack.h"
+#include "asm.h"
 
 typedef struct
 {
@@ -10,6 +10,8 @@ typedef struct
     int            pointer;
 } StructDisasm;
 
+
+void change_0_n (StructDisasm* Array);
 
 int check_passport (FILE* Bin, StructMachineCode* Code);
 
@@ -31,9 +33,11 @@ void add_to_array (StructDisasm* Array, const char* line);
 
 void print_array (StructDisasm* Array);
 
+int reparse_label (StructDisasm* Array, StructMachineCode* Code);
+
 void reparse_reg (StructDisasm* Array, StructMachineCode* Code);
 
-int reparse_int (StructDisasm* Array, StructMachineCode* Code);
+void reparse_int (StructDisasm* Array, StructMachineCode* Code);
 
 void reparse_double (StructDisasm* Array, StructMachineCode* Code);
 

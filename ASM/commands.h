@@ -11,19 +11,16 @@
 
 //---------------------------------------------------------------------------
 
-
 #define PRS_STD \
     fprintf (Code->listing_file, "    %0.4d 0x%0.2X %s\n", \
-     Code->ip - 1, Code->ArrCode[Code->ip - 1], ArrCommands[j].name); \
+             Code->ip - 1, Code->ArrCode[Code->ip - 1], ArrCommands[j].name); \
     return 0;
 
 #define REP_STD \
     add_to_array (Array, ArrCommands[i].name); \
     Code->ip++; \
-    Array->Buffer[Array->pointer] = '\n'; \
-    Array->pointer++; \
-    return 0;
-
+    Array->Buffer[Array->pointer] = '\0'; \
+    Array->pointer++;
 
 //---------------------------------------------------------------------------
 #define PRS_JMP \
@@ -35,8 +32,7 @@
 
 #define REP_JMP \
     add_to_array (Array, ArrCommands[i].name); \
-    reparse_jump (Array, Code, ArrCommands[i].name); \
-    return 0;
+    reparse_jump (Array, Code, ArrCommands[i].name);
 
 #define STD_JUMP \
     int label = 0; \
@@ -55,6 +51,8 @@
 DEF_CMD ("hlt", hlt, 0,
 {
     //printf ("halted in %d\n", CPU->ip);
+    DODUMP (CPU);
+
     return 1;
 },
 {
@@ -63,13 +61,8 @@ DEF_CMD ("hlt", hlt, 0,
 {
     add_to_array (Array, ArrCommands[i].name);
     Code->ip++;
-    Array->Buffer[Array->pointer] = '\n';
+    Array->Buffer[Array->pointer] = '\0';
     Array->pointer++;
-
-    Array->Buffer[Array->pointer] = '\n';
-    Array->pointer++;
-
-    return 0;
 })
 
 DEF_CMD ("push", push, 1,
@@ -87,7 +80,6 @@ DEF_CMD ("push", push, 1,
 {
     add_to_array (Array, ArrCommands[i].name);
     reparse_push_or_pop (Array, Code, ArrCommands[i].name);
-    return 0;
 })
 
 DEF_CMD ("pop", pop, 2,
@@ -104,7 +96,6 @@ DEF_CMD ("pop", pop, 2,
 {
     add_to_array (Array, ArrCommands[i].name);
     reparse_push_or_pop (Array, Code, ArrCommands[i].name);
-    return 0;
 })
 
 DEF_CMD ("add", add, 3,
@@ -121,6 +112,7 @@ DEF_CMD ("add", add, 3,
 },
 {
     REP_STD
+
 })
 
 DEF_CMD ("sub", sub, 4,
@@ -136,7 +128,7 @@ DEF_CMD ("sub", sub, 4,
     PRS_STD
 },
 {
-
+    REP_STD
 })
 
 DEF_CMD ("mul", mul, 5,
@@ -147,6 +139,7 @@ DEF_CMD ("mul", mul, 5,
     PUSH (a * b);
 
     CPU->ip++;
+
 },
 {
     PRS_STD
@@ -172,6 +165,7 @@ DEF_CMD ("div", m_div, 6,
 
 
     CPU->ip++;
+
 },
 {
     PRS_STD
@@ -192,6 +186,7 @@ DEF_CMD ("inp", inp, 7,
     //printf ("   inputed %lg\n", x);
 
     CPU->ip++;
+
 },
 {
     PRS_STD
@@ -206,6 +201,7 @@ DEF_CMD ("out", out, 8,
 
     printf ("\n\nout:  %lg\n", x);
     CPU->ip++;
+
 },
 {
     PRS_STD
@@ -217,32 +213,8 @@ DEF_CMD ("out", out, 8,
 DEF_CMD ("dump", dump, 9,
 {
     //printf ("Work in progress\n");
-    int min = (CPU->ip > 5) ? CPU->ip - 5 : 0;
-    int max = (CPU->ip < (CPU->size - 5)) ? CPU->ip + 5 : CPU->size;
 
-    for (int i = min; i < max; i++)
-    {
-        printf (KNRM"%0.4d    0x%0.2X", i, CPU->Array[i]);
-
-        if (i == CPU->ip)
-        {
-            printf (KRED" <");
-        }
-
-        printf ("\n");
-    }
-
-    for (int i = 0; i < CPU->stack->size; i++)
-    {
-        printf ("stack %0.4d    %lg\n", i, CPU->stack->data[i]);
-    }
-
-    for (int i = 0; i < CPU->addres_stack->size; i++)
-    {
-        printf ("address stack %0.4d    %lg\n", i, CPU->addres_stack->data[i]);
-    }
-
-    exit (0); //////////////////////////
+    //exit (0); //////////////////////////
     CPU->ip++;
 },
 {
@@ -261,6 +233,7 @@ DEF_CMD ("dup", m_dup, 10,
     PUSH (a);
 
     CPU->ip++;
+
 },
 {
     PRS_STD
@@ -272,6 +245,8 @@ DEF_CMD ("dup", m_dup, 10,
 DEF_CMD ("jump", jump, 11,
 {
     STD_JUMP
+
+
 },
 {
     PRS_JMP
@@ -294,6 +269,8 @@ DEF_CMD ("ja", ja, 12,
     {
         CPU->ip += 5;
     }
+
+
 },
 {
     PRS_JMP
@@ -316,6 +293,8 @@ DEF_CMD ("jb", jb, 13,
     {
         CPU->ip += 5;
     }
+
+
 },
 {
     PRS_JMP
@@ -359,6 +338,8 @@ DEF_CMD ("jbe", jbe, 15,
     {
         CPU->ip += 5;
     }
+
+
 },
 {
     PRS_JMP
@@ -380,6 +361,8 @@ DEF_CMD ("je", je, 16,
     {
         CPU->ip += 5;
     }
+
+
 },
 {
     PRS_JMP
@@ -401,6 +384,8 @@ DEF_CMD ("jne", jne, 17,
     {
         CPU->ip += 5;
     }
+
+
 },
 {
     PRS_JMP
@@ -427,6 +412,7 @@ DEF_CMD ("call", call, 18,
 
     //printf ("   called %d from %d\n", label, CPU->ip);
     CPU->ip = label;
+
 },
 {
     PRS_JMP
@@ -445,6 +431,7 @@ DEF_CMD ("ret", ret, 19,
 
     //printf ("   returned %d from %d\n", label, CPU->ip);
     CPU->ip = label;
+
 },
 {
     PRS_STD
@@ -452,13 +439,11 @@ DEF_CMD ("ret", ret, 19,
 {
     add_to_array (Array, ArrCommands[i].name);
     Code->ip++;
-    Array->Buffer[Array->pointer] = '\n';
+    Array->Buffer[Array->pointer] = '\0';
     Array->pointer++;
 
-    Array->Buffer[Array->pointer] = '\n';
+    Array->Buffer[Array->pointer] = '\0';
     Array->pointer++;
-
-    return 0;
 })
 
 DEF_CMD ("sqrt", m_sqrt, 20,
@@ -468,6 +453,8 @@ DEF_CMD ("sqrt", m_sqrt, 20,
     PUSH (sqrt (a));
 
     CPU->ip++;
+
+
 },
 {
     PRS_STD
@@ -577,7 +564,7 @@ DEF_CMD ("vsetx", vsetx, 25,
 
     reparse_int (Array, Code);
 
-    Array->Buffer[Array->pointer] = '\n';
+    Array->Buffer[Array->pointer] = '\0';
     Array->pointer++;
 })
 
@@ -622,10 +609,8 @@ DEF_CMD ("vsety", vsety, 26,
 
     reparse_int (Array, Code);
 
-    Array->Buffer[Array->pointer] = '\n';
+    Array->Buffer[Array->pointer] = '\0';
     Array->pointer++;
-
-    return 0;
 })
 
 DEF_CMD ("updscr", updscr, 27,

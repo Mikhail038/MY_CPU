@@ -337,14 +337,25 @@ int parse_push_or_pop (StructSource* Source, StructMachineCode* Code, const char
     char* Name = &(Source->Buffer[Source->pointer]);
 
     int i = 0;
-    for (; i < Source->amnt_symbols; i++)
+    for (; i < Source->amnt_symbols - Source->pointer - 1; i++)
     {
+        //printf ("!%d! %d %d\n", i, Source->pointer, Source->amnt_symbols);
         if ((Name[i] == ' ') || (Name[i] == '\n') || (Name[i] == '\0'))
         {
             Name[i] = '\0';
+            i = -1;
             break;
         }
     }
+
+    if (i != -1)
+    {
+        printf ("Syntax error! (Maybe because of empty pop in the end)\n");
+        return -1;
+    }
+
+    //printf ("i %d\n", i);
+    //printf ("'%c' %d\n", Name[0], Name[0]);
 
     if (Name[0] == '[')
     {
@@ -370,14 +381,14 @@ int parse_push_or_pop (StructSource* Source, StructMachineCode* Code, const char
         }
         else
         {
-            printf ("hui\n");
+            printf ("error!\n");
             abort ();
 
             return -1;
         }
 
     }
-
+    //printf ("ok\n");
     return 0;
 
 }
@@ -640,6 +651,7 @@ void jump_label (StructSource* Source,StructMachineCode* Code)
         {
             printf ("No label found! --%s-- ip %d\n", Name, Code->ip);
 
+            printf ("Array of labels:\n");
             for (int i = 0; i < LabelsAmnt; i++)
             {
                 printf ("%d %s\n", ArrLabels[i].num, ArrLabels[i].name);

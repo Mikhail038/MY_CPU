@@ -1,0 +1,222 @@
+==========================================================
+DISASSEMBLED FILE
+==========================================================
+	inp
+	pop [3]
+	inp
+	push 4
+	div
+	pop [4]
+	push 35
+	pop [5]
+	vsetx 160
+	vsetx 80
+	push 1
+	pop [6]
+	push 0
+	pop [8]
+	push 0
+	pop [9]
+	dump
+	push 160
+	pop rax
+	push 80
+	pop rbx
+	push 100
+	pop rcx
+	push rax
+	push rbx
+	mul
+	push 11
+	sub
+	push rcx
+	add
+	pop [2]
+label_145:
+	push 100
+	pop rdx
+label_156:
+	call label_386
+	push rdx
+	dup
+	push [2]
+	ja label_156
+	clrscr
+	updscr
+	push [6]
+	push 1
+	jne label_290
+	push [6]
+	pop [7]
+	push [3]
+	push 1.2
+	mul
+	dup
+	push 3000
+	ja label_240
+	call label_733
+label_240:
+	pop [3]
+	push [4]
+	push 1.2
+	mul
+	dup
+	push 1500
+	ja label_280
+	call label_733
+label_280:
+	pop [4]
+	jump label_380
+label_290:
+	push [6]
+	pop [7]
+	push [3]
+	push 1.6
+	div
+	dup
+	push 100
+	jb label_335
+	call label_733
+label_335:
+	pop [3]
+	push [4]
+	push 1.5
+	div
+	dup
+	push 50
+	jb label_375
+	call label_733
+label_375:
+	pop [4]
+label_380:
+	jump label_145
+	hlt
+
+label_386:
+	push rdx
+	dup
+	push rcx
+	sub
+	dup
+	push rax
+	call label_473
+	push rax
+	push 2
+	div
+	sub
+	dup
+	mul
+	pop [0]
+	call label_501
+	push 1
+	ja label_449
+	call label_725
+	jump label_460
+label_449:
+	push 0
+	pop [rdx]
+label_460:
+	push 1
+	add
+	pop rdx
+	ret
+
+label_473:
+	div
+	floor
+	dup
+	push rbx
+	push 2
+	div
+	sub
+	dup
+	mul
+	pop [1]
+	push rax
+	mul
+	sub
+	ret
+
+label_501:
+	push [0]
+	dup
+	push 0
+	jne label_531
+	push -1
+	mul
+label_531:
+	push [3]
+	div
+	push [1]
+	dup
+	push 0
+	jne label_567
+	push -1
+	mul
+label_567:
+	push [4]
+	div
+	add
+	push 1
+	jae label_598
+	push 0
+	ret
+
+label_598:
+	push [0]
+	dup
+	push 0
+	jne label_628
+	push -1
+	mul
+label_628:
+	push [3]
+	push 2
+	div
+	div
+	push [1]
+	dup
+	push 0
+	jne label_674
+	push -1
+	mul
+label_674:
+	push [4]
+	push 2
+	div
+	div
+	add
+	push 1
+	jb label_715
+	push 0
+	ret
+
+label_715:
+	push 1
+	ret
+
+label_725:
+	push [5]
+	pop [rdx]
+	ret
+
+label_733:
+	push [6]
+	push [7]
+	jne label_797
+	push [6]
+	push 1
+	je label_782
+	push 1
+	pop [6]
+	ret
+
+label_782:
+	push 0
+	pop [6]
+	ret
+
+label_797:
+	ret
+
+==========================================================

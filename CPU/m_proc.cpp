@@ -2,12 +2,18 @@
 #include <stdlib.h>
 
 #include "proc.h"
-
+#include <string.h>
+//TODO rename to proc_main
 
 int main (int argc, char** argv)
 {
-    FILE* Bin = argc > 1 ? fopen (argv[1], "r") : fopen ("code.mc", "r");
-    MCA (Bin != NULL, 1);
+    if ((argc > 1) && (strcmp (argv[1], "-g") == 0))
+    {
+        DBG = 1;
+    }
+
+    FILE* Bin = argc > 2 ? fopen (argv[2], "r") : fopen ("code.mc", "r");
+    MCA (Bin != NULL, 1);// TODO assert: file.cpp:line
 
     StructCPU CPU = {};
 

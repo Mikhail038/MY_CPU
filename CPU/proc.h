@@ -1,9 +1,20 @@
+
 #ifndef PROC_H
 #define PROC_H
 
 #include <math.h>
-#include "../STACK/stack.h"
-#include "../ASM/asm.h"
+#include "stack.h"
+#include "asm.h"
+
+extern int DBG;
+
+
+typedef struct
+{
+    int counter = 0;
+    unsigned char* line = NULL;
+} StructDebug;
+
 
 typedef struct
 {
@@ -16,6 +27,11 @@ typedef struct
     double*        RAM;
 } StructCPU;
 
+void DODUMP (StructCPU* CPU);
+
+//int dis_command (StructCPU* CPU, int* n);
+
+int dis_command (StructCPU* CPU, int num);
 
 
 void cpu_constructor (FILE* Bin, StructCPU* CPU);

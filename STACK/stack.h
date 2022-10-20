@@ -38,6 +38,7 @@
 
 #define STACKCTOR(stack, Capacity) stack_constructor (stack, Capacity, DOTXT_1 (stack))
 
+#ifdef PURPLE
 #define BGN                                                                \
         do                                                                 \
         {                                                                  \
@@ -49,7 +50,7 @@
         {                                                                   \
             fprintf (stderr, /*"I am dead! "*/"%-92s^ \n", __PRETTY_FUNCTION__); \
         } while (0)
-
+#endif
 
 #ifndef PURPLE
 
@@ -61,8 +62,8 @@
 #define MCP(Message)                                                                                       \
         do                                                                                                 \
         {                                                                                                  \
-            fprintf (stderr, "FAILED CHECK// " DOTXT (Message)                                              \
-            " //IN FUNCTION//%s//IN LINE//%d//IN FILE//%s//\n",                                             \
+            fprintf (stderr, "FAILED CHECK|| " DOTXT (Message)                                              \
+            " ||IN FUNCTION %s IN LINE %d IN FILE %s\n",                                             \
              __PRETTY_FUNCTION__, __LINE__, __FILE__);                                                     \
         } while (0)
 

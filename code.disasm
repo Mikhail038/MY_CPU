@@ -1,222 +1,99 @@
 ==========================================================
 DISASSEMBLED FILE
 ==========================================================
-	inp
+	inp 
 	pop [3]
-	inp
-	push 4
-	div
-	pop [4]
 	push 35
-	pop [5]
-	vsetx 160
-	vsetx 80
-	push 1
-	pop [6]
-	push 0
-	pop [8]
-	push 0
-	pop [9]
-	push 160
+	pop [4]
+	vsetx 100
+	vsety 100
+	push 100
 	pop rax
-	push 80
+	push 100
 	pop rbx
 	push 100
 	pop rcx
-	push rax
-	push rbx
-	mul
-	push 11
-	sub
-	push rcx
-	add
-	pop [2]
-label144:
-	push 100
-	pop rdx
-label155:
-	call 385
-	push rdx
-	dup
-	push [2]
-	ja 155
-	clrscr
-	updscr
-	push [6]
-	push 1
-	jne 289
-	push [6]
-	pop [7]
-	push [3]
-	push 1.2
-	mul
-	dup
-	push 3000
-	ja 239
-	call 732
-label239:
-	pop [3]
-	push [4]
-	push 1.2
-	mul
-	dup
-	push 1500
-	ja 279
-	call 732
-label279:
-	pop [4]
-	jump 379
-label289:
-	push [6]
-	pop [7]
-	push [3]
-	push 1.6
-	div
-	dup
-	push 100
-	jb 334
-	call 732
-label334:
-	pop [3]
-	push [4]
-	push 1.5
-	div
-	dup
-	push 50
-	jb 374
-	call 732
-label374:
-	pop [4]
-label379:
-	jump 144
-	hlt
-
-label385:
-	push rdx
-	dup
-	push rcx
-	sub
-	dup
-	push rax
-	call 472
-	push rax
-	push 2
-	div
-	sub
-	dup
-	mul
-	pop [0]
-	call 500
-	push 1
-	ja 448
-	call 724
-	jump 459
-label448:
 	push 0
-	pop [rdx]
-label459:
-	push 1
-	add
 	pop rdx
-	ret
+	push rax
+	push rbx
+	mul 
+	push 11
+	sub 
+	push rcx
+	add 
+	pop [2]
+	push 100
+	pop rdx
+label_108:
+	call label_128
+	push rdx
+	dup 
+	push [2]
+	ja label_108
+	updscr 
+	hlt 
+label_128:
+	push rdx
+	dup 
+	push rcx
+	sub 
+	dup 
+	push rax
+	call label_199
+	push rax
+	push 2
+	div 
+	sub 
+	dup 
+	mul 
+	pop [0]
+	call label_227
+	push 1
+	ja label_186
+	call label_270
+label_186:
+	push 1
+	add 
+	pop rdx
+	ret 
 
-label472:
-	div
-	floor
-	dup
+label_199:
+	div 
+	floor 
+	dup 
 	push rbx
 	push 2
-	div
-	sub
-	dup
-	mul
+	div 
+	sub 
+	dup 
+	mul 
 	pop [1]
 	push rax
-	mul
-	sub
-	ret
+	mul 
+	sub 
+	ret 
 
-label500:
+label_227:
 	push [0]
-	dup
-	push 0
-	jne 530
-	push -1
-	mul
-label530:
-	push [3]
-	div
 	push [1]
-	dup
-	push 0
-	jne 566
-	push -1
-	mul
-label566:
-	push [4]
-	div
-	add
-	push 1
-	jae 597
-	push 0
-	ret
-
-label597:
-	push [0]
-	dup
-	push 0
-	jne 627
-	push -1
-	mul
-label627:
+	add 
 	push [3]
-	push 2
-	div
-	div
-	push [1]
-	dup
+	dup 
+	mul 
+	jae label_260
 	push 0
-	jne 673
-	push -1
-	mul
-label673:
+	ret 
+
+label_260:
+	push 1
+	ret 
+
+label_270:
+	push rdx
 	push [4]
-	push 2
-	div
-	div
-	add
-	push 1
-	jb 714
-	push 0
-	ret
-
-label714:
-	push 1
-	ret
-
-label724:
-	push [5]
 	pop [rdx]
-	ret
-
-label732:
-	push [6]
-	push [7]
-	dump
-	jne 797
-	push [6]
-	push 1
-	je 782
-	push 1
-	pop [6]
-	ret
-
-label782:
-	push 0
-	pop [6]
-	ret
-
-label797:
-	ret
+	pop 
+	ret 
 
 ==========================================================

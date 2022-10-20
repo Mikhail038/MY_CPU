@@ -12,7 +12,7 @@ int main (int argc, char** argv)
     StructSource Source = {};
 
     int Amnt_lines = count_lines_in_file (SourceFile);
-    Source.amnt_symbols = 1 + count_symbols_in_file (SourceFile);
+    Source.amnt_symbols = count_symbols_in_file (SourceFile);
     int MaxSize = Amnt_lines + Amnt_lines * 2 * sizeof (double);
 
     MCA (Amnt_lines >= 0, 1);
