@@ -1,7 +1,7 @@
 ==========================================================
 DISASSEMBLED FILE
 ==========================================================
-	inp 
+	inp
 	pop [3]
 	push 35
 	pop [4]
@@ -17,36 +17,36 @@ DISASSEMBLED FILE
 	pop rdx
 	push rax
 	push rbx
-	mul 
+	mul
 	push 11
-	sub 
+	sub
 	push rcx
-	add 
+	add
 	pop [2]
 	push 100
 	pop rdx
 label_108:
 	call label_128
 	push rdx
-	dup 
+	dup
 	push [2]
 	ja label_108
-	updscr 
-	hlt 
+	updscr
+	hlt
 label_128:
 	push rdx
-	dup 
+	dup
 	push rcx
-	sub 
-	dup 
+	sub
+	dup
 	push rax
 	call label_199
 	push rax
 	push 2
-	div 
-	sub 
-	dup 
-	mul 
+	div
+	sub
+	dup
+	mul
 	pop [0]
 	call label_227
 	push 1
@@ -54,46 +54,46 @@ label_128:
 	call label_270
 label_186:
 	push 1
-	add 
+	add
 	pop rdx
-	ret 
+	ret
 
 label_199:
-	div 
-	floor 
-	dup 
+	div
+	floor
+	dup
 	push rbx
 	push 2
-	div 
-	sub 
-	dup 
-	mul 
+	div
+	sub
+	dup
+	mul
 	pop [1]
 	push rax
-	mul 
-	sub 
-	ret 
+	mul
+	sub
+	ret
 
 label_227:
 	push [0]
 	push [1]
-	add 
+	add
 	push [3]
-	dup 
-	mul 
+	dup
+	mul
 	jae label_260
 	push 0
-	ret 
+	ret
 
 label_260:
 	push 1
-	ret 
+	ret
 
 label_270:
 	push rdx
 	push [4]
 	pop [rdx]
-	pop 
-	ret 
+	pop
+	ret
 
 ==========================================================

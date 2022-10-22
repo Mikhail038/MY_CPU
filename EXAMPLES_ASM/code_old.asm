@@ -12,7 +12,7 @@
     dup
     push 2
     div
-    rnd
+    floor
     push 2
     mul
 
@@ -27,7 +27,7 @@
     pop
     push 2
     div
-    rnd
+    floor
 
 label1:
     pop rax ; x0
@@ -41,7 +41,7 @@ label1:
     dup
     push 2
     div
-    rnd
+    floor
     push 2
     mul
 
@@ -56,7 +56,7 @@ label1:
     pop
     push 2
     div
-    rnd
+    floor
 
 label2:
     pop rbx ; y0
@@ -67,6 +67,7 @@ label2:
     push rbx
     out
     out
+    jump 170
     hlt
 
     push 100
@@ -77,6 +78,27 @@ label2:
 
     push 2
     pop [0]
+
+    push 1
+    dup
+    pop rdx
+
+cycle:
+    push 120
+    je out
+    push rdx
+    push 1
+    add
+    dup
+    pop rdx
+    pop [rdx]
+
+    push rdx
+    jump cycle
+
+out:
+
+
 
     call foo
 
@@ -94,6 +116,6 @@ label3:
     add
     push 2
     div
-    rnd
+    floor
 
     ret

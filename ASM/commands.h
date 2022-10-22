@@ -13,33 +13,33 @@
 
 #define PRS_STD \
     fprintf (Code->listing_file, "    %0.4d 0x%0.2X %s\n", \
-             Code->ip - 1, Code->ArrCode[Code->ip - 1], ArrCommands[j].name); \
+             Code->ip - 1, Code->ArrCode[Code->ip - 1], ArrCommands[counter].name); \
     return 0;
 
 #define REP_STD \
-    add_to_array (Array, ArrCommands[i].name); \
+    add_to_array (Array, ArrCommands[counter].name); \
     Code->ip++; \
     Array->Buffer[Array->pointer] = '\0'; \
     Array->pointer++;
 
 //---------------------------------------------------------------------------
 #define PRS_JMP \
-    if (parse_jump (Source, Code, ArrCommands[j].name) != 0) \
+    if (parse_jump (Source, Code, ArrCommands[counter].name) != 0) \
     { \
-        return -1; \
+        return StdError; \
     } \
     else return 0;
 
 #define REP_JMP \
-    add_to_array (Array, ArrCommands[i].name); \
-    reparse_jump (Array, Code, ArrCommands[i].name);
+    add_to_array (Array, ArrCommands[counter].name); \
+    reparse_jump (Array, Code, ArrCommands[counter].name);
 
 #define STD_JUMP \
     int label = 0; \
     CPU->ip++; \
-    for (int i = 0; i < sizeof (int); i++) \
+    for (int counter = 0; counter < sizeof (int); counter++) \
     { \
-        ((unsigned char*) &label)[i] = CPU->Array[CPU->ip]; \
+        ((unsigned char*) &label)[counter] = CPU->Array[CPU->ip]; \
         CPU->ip++; \
     } \
     CPU->ip = label;
@@ -51,7 +51,7 @@
 DEF_CMD ("hlt", hlt, 0,
 {
     //printf ("halted in %d\n", CPU->ip);
-    DODUMP (CPU);
+    do_dump (CPU);
 
     return 1;
 },
@@ -59,7 +59,7 @@ DEF_CMD ("hlt", hlt, 0,
     PRS_STD
 },
 {
-    add_to_array (Array, ArrCommands[i].name);
+    add_to_array (Array, ArrCommands[counter].name);
     Code->ip++;
     Array->Buffer[Array->pointer] = '\0';
     Array->pointer++;
@@ -78,8 +78,8 @@ DEF_CMD ("push", push, 1,
     else return 0;
 },
 {
-    add_to_array (Array, ArrCommands[i].name);
-    reparse_push_or_pop (Array, Code, ArrCommands[i].name);
+    add_to_array (Array, ArrCommands[counter].name);
+    reparse_push_or_pop (Array, Code, ArrCommands[counter].name);
 })
 
 DEF_CMD ("pop", pop, 2,
@@ -94,8 +94,8 @@ DEF_CMD ("pop", pop, 2,
     else return 0;
 },
 {
-    add_to_array (Array, ArrCommands[i].name);
-    reparse_push_or_pop (Array, Code, ArrCommands[i].name);
+    add_to_array (Array, ArrCommands[counter].name);
+    reparse_push_or_pop (Array, Code, ArrCommands[counter].name);
 })
 
 DEF_CMD ("add", add, 3,
@@ -437,7 +437,7 @@ DEF_CMD ("ret", ret, 19,
     PRS_STD
 },
 {
-    add_to_array (Array, ArrCommands[i].name);
+    add_to_array (Array, ArrCommands[counter].name);
     Code->ip++;
     Array->Buffer[Array->pointer] = '\0';
     Array->pointer++;
@@ -558,7 +558,7 @@ DEF_CMD ("vsetx", vsetx, 25,
     return 0;
 },
 {
-    add_to_array (Array, ArrCommands[i].name);
+    add_to_array (Array, ArrCommands[counter].name);
 
     Code->ip++;
 
@@ -585,12 +585,12 @@ DEF_CMD ("vsety", vsety, 26,
 
     char* Name = &(Source->Buffer[Source->pointer]);
 
-    int i = 0;
-    for (; i < Source->amnt_symbols; i++)
+    int counter = 0;
+    for (; counter < Source->amnt_symbols; counter++)
     {
-        if ((Name[i] == ' ') || (Name[i] == '\n') || (Name[i] == '\0'))
+        if ((Name[counter] == ' ') || (Name[counter] == '\n') || (Name[counter] == '\0'))
         {
-            Name[i] = '\0';
+            Name[counter] = '\0';
             break;
         }
     }
@@ -603,7 +603,7 @@ DEF_CMD ("vsety", vsety, 26,
     return 0;
 },
 {
-    add_to_array (Array, ArrCommands[i].name);
+    add_to_array (Array, ArrCommands[counter].name);
 
     Code->ip++;
 

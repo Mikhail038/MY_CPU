@@ -11,7 +11,7 @@ typedef struct
 } StructDisasm;
 
 
-void change_0_n (StructDisasm* Array);
+void change_line_end_to_newline (StructDisasm* Array);
 
 int check_passport (FILE* Bin, StructMachineCode* Code);
 

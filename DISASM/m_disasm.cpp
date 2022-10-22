@@ -8,8 +8,8 @@
 
 int main (int argc, char** argv)
 {
-    FILE* Bin = argc > 1 ? fopen (argv[1], "rb") : fopen ("code.mc", "r");
-    MCA (Bin != NULL, 0);
+    FILE* Bin = argc > 1 ? fopen (argv[1], "rb") : fopen ("EXAMPLES_MC/code.mc", "r");
+    MCA (Bin != NULL, 1);
 
     StructMachineCode Code = {};
 
@@ -21,11 +21,13 @@ int main (int argc, char** argv)
 
     StructDisasm Array = {};
 
-    Array.Buffer = (unsigned char*) calloc (Code.size * 1, sizeof (*Array.Buffer));
+    Array.Buffer = (unsigned char*) calloc (Code.size * TEMPORARY_CONST_4, sizeof (*Array.Buffer));
 
     make_text_from_code (&Array, &Code);
 
-    FILE* Text = argc > 2 ? fopen (argv[2], "w") : fopen ("code.disasm", "w"); // TODO check on null
+    FILE* Text = argc > 2 ? fopen (argv[2], "w") : fopen ("EXAMPLES_DISASM/code.disasm", "w");
+    MCA (Text != NULL, 1);
+
 
     print_text_in_file (Text, &Array);
 

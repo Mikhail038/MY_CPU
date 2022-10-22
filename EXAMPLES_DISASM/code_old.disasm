@@ -1,0 +1,77 @@
+==========================================================
+DISASSEMBLED FILE
+==========================================================
+	vsetx 10
+	vsety 15
+	push 10
+	dup 
+	pop rax
+	dup 
+	push 2
+	div 
+	floor 
+	push 2
+	mul 
+	pop rax
+	je label_198
+	dup 
+	push rax
+	ja label_72
+	pop 
+	pop 
+	push 2
+	div 
+	floor 
+label_72:
+	pop rax
+	push 15
+	dup 
+	pop rbx
+	dup 
+	push 2
+	div 
+	floor 
+	push 2
+	mul 
+	pop rbx
+	je label_198
+	dup 
+	push rbx
+	ja label_136
+	pop 
+	pop 
+	push 2
+	div 
+	floor 
+label_136:
+	pop rbx
+	push rax
+	push rbx
+	out 
+	out 
+	jump label_170
+	hlt 
+	push 100
+	pop rdx
+	push 1
+label_170:
+	pop rcx
+	push 2
+	pop [0]
+	call label_193
+	updscr 
+	hlt 
+label_193:
+	pop rcx
+	push rdx
+	ret 
+
+label_198:
+	push 1
+	add 
+	push 2
+	div 
+	floor 
+	ret 
+
+==========================================================

@@ -6,12 +6,9 @@
 #include "stack.h"
 #include "asm.h"
 
-extern int DBG;
-
-
 typedef struct
 {
-    int counter = 0;
+    int            num  = 0;
     unsigned char* line = NULL;
 } StructDebug;
 
@@ -20,6 +17,8 @@ typedef struct
 {
     int            ip;
     int            size;
+    int            size_RAM;
+    EModes         mode;
     StructStack*   stack;
     StructStack*   addres_stack;
     unsigned char* Array;
@@ -27,14 +26,12 @@ typedef struct
     double*        RAM;
 } StructCPU;
 
-void DODUMP (StructCPU* CPU);
-
-//int dis_command (StructCPU* CPU, int* n);
+void do_dump (StructCPU* CPU);
 
 int dis_command (StructCPU* CPU, int num);
 
 
-void cpu_constructor (FILE* Bin, StructCPU* CPU);
+int cpu_constructor (FILE* Bin, StructCPU* CPU);
 
 int check_passport (FILE* Bin, StructCPU* CPU);
 

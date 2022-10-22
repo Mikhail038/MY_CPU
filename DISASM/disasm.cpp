@@ -5,31 +5,16 @@
 #include "disasm.h"
 
 
-//TODO jump labels
-
-//static int ROUND = 1;
-
-// typedef struct
-// {
-//     ECommandNums  num;
-//     char          name[10];
-//     int           args;
-// } StructCommands;
-
-
-
-//extern StructCommands ArrCommands[AmntCommands];
-
-static int ROUND = 7;
+static int ROUND = FIRST_ROUND;
 
 static StructLabels ArrLabels[LabelsAmnt] = {};
 
 int read_array_of_code (FILE* Bin, StructMachineCode* Code)
 {
-    MCA (Bin  != NULL, -4);
-    MCA (Code != NULL, -6);
+    MCA (Bin  != NULL, StdError);
+    MCA (Code != NULL, StdError);
 
-    Code->ArrCode = (unsigned char*) calloc (Code->size * 3, sizeof (*Code->ArrCode));
+    Code->ArrCode = (unsigned char*) calloc (Code->size * TEMPORARY_CONST_1, sizeof (*Code->ArrCode));
     fread (Code->ArrCode, Code->size, sizeof (*Code->ArrCode), Bin);
 
     //printf ("%0.2X %d", Code->ArrCode[Code->ip], Code->ip);
@@ -39,33 +24,29 @@ int read_array_of_code (FILE* Bin, StructMachineCode* Code)
 
 int check_passport (FILE* Bin, StructMachineCode* Code) // TODO copypaste
 {
-    MCA (Bin  != NULL, -1);
-    MCA (Code != NULL, -2);
+    MCA (Bin  != NULL, StdError);
+    MCA (Code != NULL, StdError);
 
     int vram_size = 0;
 
-    fread (&Code->sygnature, 1, sizeof (Code->sygnature), Bin);
+    fread (&Code->signature, 1, sizeof (Code->signature), Bin);
     fread (&Code->version,   1, sizeof (Code->version),   Bin);
     fread (&Code->size,      1, sizeof (Code->size),      Bin);
     fread (&vram_size,       1, sizeof (vram_size),       Bin);
 
 
-    if (Code->sygnature != 291)
+    if (Code->signature != StdSign)
     {
         printf ("Wrong sygnature!\n");
-        exit (0); // TODO remove
+        return StdError;
     }
-    if (Code->version != 1)
+    if (Code->version != StdVersion)
     {
         printf ("Wrong version!\n");
-        exit (0); // TODO remove
+        return StdError;
     }
 
-    // printf ("%0.2X %0.2X   %0.2X %0.2X %0.2X %0.2X (%d)\n", Code->sygnature, Code->version,
-    //  ((unsigned char*) &Code->size)[0],  ((unsigned char*) &Code->size)[1],
-    //  ((unsigned char*) &Code->size)[2],  ((unsigned char*) &Code->size)[3], Code->size);
-
-    return 7;
+    return 0;
 }
 
 int make_text_from_code (StructDisasm* Array, StructMachineCode* Code)
@@ -75,18 +56,14 @@ int make_text_from_code (StructDisasm* Array, StructMachineCode* Code)
 
     for (; Code->ip < Code->size;)
     {
-        if (read_command (Array, Code) == 2)
+        if (read_command (Array, Code) != 0)
         {
             printf ("crush!\n");
-            return 2;
+            return StdError;
         }
     }
 
-    if (ROUND > 1)
-    {
-        return 1;
-    }
-    else
+    if (ROUND < FIRST_ROUND + 1)
     {
         ROUND++;
         make_text_from_code (Array, Code);
@@ -97,7 +74,7 @@ int make_text_from_code (StructDisasm* Array, StructMachineCode* Code)
     //     printf ("%d  %s\n", ArrLabels[i].num, ArrLabels[i].name);
     // }
 
-    return 1;
+    return 0;
 }
 
 
@@ -108,15 +85,15 @@ int make_text_from_code (StructDisasm* Array, StructMachineCode* Code)
 
 int read_command (StructDisasm* Array, StructMachineCode* Code)
 {
-    for (int i = 0; i < LabelsAmnt; i++)// TODO naming
+    for (int counter = 0; counter < LabelsAmnt; ++counter)
     {
-        if (Code->ip == ArrLabels[i].num)
+        if (Code->ip == ArrLabels[counter].num)
         {
-            int length = strlen (ArrLabels[i].name);
+            int length = strlen (ArrLabels[counter].name);
 
-            for (int j = 0; j < length; j++) // TODO naming
+            for (int inline_counter = 0; inline_counter < length; ++inline_counter) \
             {
-                Array->Buffer[Array->pointer] = (ArrLabels[i].name)[j];
+                Array->Buffer[Array->pointer] = (ArrLabels[counter].name)[inline_counter];
                 Array->pointer++;
             }
 
@@ -129,18 +106,18 @@ int read_command (StructDisasm* Array, StructMachineCode* Code)
     }
 
 
-    int marker = Code->ArrCode[Code->ip] & 29;
+    int marker = Code->ArrCode[Code->ip] & FirstFiveBitMask;
 
-    for (int i = 0;  i < AmntCommands; i++) // TODO naming
+    for (int counter = 0;  counter < AmntCommands; ++counter) \
     {
-        if (ArrCommands[i].num == marker)
+        if (ArrCommands[counter].num == marker)
         {
             switch (marker)
             {
                 #include "../ASM/commands.h"
                 default:
                     printf ("default error!\n");
-                    return -1;
+                    return StdError;
             }
         }
     }
@@ -157,36 +134,31 @@ void add_to_array (StructDisasm* Array, const char* line)
 
     int length = strlen (line);
 
-    for (int i = 0; i < length; i++) // TODO naming
+    for (int counter = 0; counter < length; ++counter)
     {
-        Array->Buffer[Array->pointer] = line[i];
+        Array->Buffer[Array->pointer] = line[counter];
         Array->pointer++;
     }
     Array->Buffer[Array->pointer] = ' ';
     Array->pointer++;
-
-    //print_array (Array);
 
     return;
 }
 
 int reparse_push_or_pop (StructDisasm* Array, StructMachineCode* Code, const char* line)
 {
-    //printf ("a\n");
-
-    if ((Code->ArrCode[Code->ip] & 3) && (Code->ArrCode[Code->ip] & 2))
+    if ((Code->ArrCode[Code->ip] & eighth_bit) && (Code->ArrCode[Code->ip] & seventh_bit))
     {
         Array->Buffer[Array->pointer] = '[';
         Array->pointer++;
 
         Code->ip++;
         reparse_reg (Array, Code);
-       //printf ("or\n");
 
         Array->Buffer[Array->pointer] = ']';
         Array->pointer++;
     }
-    else if (Code->ArrCode[Code->ip] & 2)
+    else if (Code->ArrCode[Code->ip] & eighth_bit)
     {
         Array->Buffer[Array->pointer] = '[';
         Array->pointer++;
@@ -198,7 +170,7 @@ int reparse_push_or_pop (StructDisasm* Array, StructMachineCode* Code, const cha
         Array->Buffer[Array->pointer] = ']';
         Array->pointer++;
     }
-    else if (Code->ArrCode[Code->ip] & 5)
+    else if (Code->ArrCode[Code->ip] & seventh_bit)
     {
         Code->ip++;
         //printf ("r\n");
@@ -232,24 +204,24 @@ int reparse_jump (StructDisasm* Array, StructMachineCode* Code, const char* line
 
     int num = reparse_label (Array, Code);
 
-    char* str = (char*) calloc (16, sizeof (*str));
+    char* str = (char*) calloc (StdLabelLineSize + IntegerLineSize, sizeof (*str));
     str = strcpy (str, "label_");
-    sprintf (&(str[4]), "%d", num);
+    sprintf (&(str[StdLabelLineSize]), "%d", num);
 
 
-    for (int i = 0; i < LabelsAmnt; i++)
+    for (int counter = 0; counter < LabelsAmnt; ++counter)
     {
-        if (ArrLabels[i].num == num)
+        if (ArrLabels[counter].num == num)
         {
             break;
         }
 
-        if (ArrLabels[i].num == -1)
+        if (ArrLabels[counter].num == InvalidLabel)
         {
             //printf ("%d %d\n", i, ArrLabels[i].num);
-            ArrLabels[i].name = (char*) calloc (6, sizeof (*ArrLabels[i].name));
-            ArrLabels[i].name = strcpy (ArrLabels[i].name, str);
-            ArrLabels[i].num = num;
+            ArrLabels[counter].name = (char*) calloc (StdLabelLineSize + IntegerLineSize, sizeof (*ArrLabels[counter].name));
+            ArrLabels[counter].name = strcpy (ArrLabels[counter].name, str);
+            ArrLabels[counter].num = num;
             //printf ("%-3d %-3d %s\n", i, ArrLabels[i].num , ArrLabels[i].name);
             // fprintf (Code->listing_file, "added label: %s %d  [%0.2X %0.2X %0.2X %0.2X]\n", Name, Code->ip,
             break;
@@ -266,9 +238,9 @@ int reparse_jump (StructDisasm* Array, StructMachineCode* Code, const char* line
 
 void print_array (StructDisasm* Array)
 {
-    for (int i = 0; i < Array->pointer; i++) // TODO naming
+    for (int counter = 0; counter < Array->pointer; ++counter)
     {
-        printf ("%c", Array->Buffer[i]);
+        printf ("%c", Array->Buffer[counter]);
     }
     printf ("\n");
 
@@ -279,12 +251,12 @@ int reparse_label (StructDisasm* Array, StructMachineCode* Code)
 {
     int argument = 0;
 
-    for (int i = 0; i < sizeof (int); i++) // TODO naming
+    for (int counter = 0; counter < sizeof (int); ++counter)
     {
-        ((unsigned char*) &argument)[i] = Code->ArrCode[Code->ip];
+        ((unsigned char*) &argument)[counter] = Code->ArrCode[Code->ip];
         Code->ip++;
     }
-    char buf[20];
+    char buf[StdLabelLineSize + IntegerLineSize];
 
     sprintf (buf, "label_%d", argument);
 
@@ -313,12 +285,12 @@ void reparse_int (StructDisasm* Array, StructMachineCode* Code)
 {
     int argument = 0;
 
-    for (int i = 0; i < sizeof (int); i++) // TODO naming
+    for (int counter = 0; counter < sizeof (int); ++counter)
     {
-        ((unsigned char*) &argument)[i] = Code->ArrCode[Code->ip];
+        ((unsigned char*) &argument)[counter] = Code->ArrCode[Code->ip];
         Code->ip++;
     }
-    char buf[7];
+    char buf[IntegerLineSize];
 
     sprintf (buf, "%d", argument);
 
@@ -335,12 +307,12 @@ void reparse_double (StructDisasm* Array, StructMachineCode* Code)
 {
     double argument = 0;
 
-    for (int i = 0; i < sizeof (double); ++i) // TODO naming
+    for (int counter = 0; counter < sizeof (double); ++counter)
     {
-        ((unsigned char*) &argument)[i] = Code->ArrCode[Code->ip];
+        ((unsigned char*) &argument)[counter] = Code->ArrCode[Code->ip];
         Code->ip++;
     }
-    char buf[2];
+    char buf[DoubleLineSize];
 
     sprintf (buf, "%lg", argument);
 
@@ -354,7 +326,7 @@ void reparse_double (StructDisasm* Array, StructMachineCode* Code)
 
 void print_text_in_file (FILE* Text, StructDisasm* Array)
 {
-    change_0_n (Array);
+    change_line_end_to_newline (Array);
 
     fprintf (Text, "==========================================================\n");
     fprintf (Text, "DISASSEMBLED FILE\n");
@@ -363,22 +335,22 @@ void print_text_in_file (FILE* Text, StructDisasm* Array)
     fwrite (Array->Buffer, Array->pointer, sizeof (*Array->Buffer), Text);
     fprintf (Text, "==========================================================\n");
 
-    for (int i = 0; i < LabelsAmnt; i++) // TODO naming
+    for (int counter = 0; counter < LabelsAmnt; counter++)
     {
-        if (ArrLabels[i].num != -2)
+        if (ArrLabels[counter].num != InvalidLabel)
         {
-            free (ArrLabels[i].name);
+            free (ArrLabels[counter].name);
         }
     }
 }
 
-void change_0_n (StructDisasm* Array) // TODO rename to "change_line_end_to_newline"
+void change_line_end_to_newline (StructDisasm* Array)
 {
-    for (int i = 0; i < Array->pointer; i++) // TODO naming
+    for (int counter = 0; counter < Array->pointer; ++counter)
     {
-        if (Array->Buffer[i] == '\0')
+        if (Array->Buffer[counter] == '\0')
         {
-            Array->Buffer[i] = '\n';
+            Array->Buffer[counter] = '\n';
         }
     }
 
