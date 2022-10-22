@@ -92,7 +92,7 @@ void do_dump (StructCPU* CPU)
     int counter = 0;
     for (; counter < REGS_CONST - 1; counter++)
     {
-        printf (KCYN "%04d| %13lg\n" KNRM , counter, CPU->Regs[counter]);
+        printf (KCYN "r""%c""x| %13lg\n" KNRM , counter + (int) 'a', CPU->Regs[counter]);
     }
 
     printf ("\n");
