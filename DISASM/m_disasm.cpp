@@ -13,7 +13,8 @@ int main (int argc, char** argv)
 
     StructMachineCode Code = {};
 
-    check_passport (Bin, &Code);
+    int VramSize = 0;
+    check_passport (Bin, &(Code.size), &VramSize);
 
     read_array_of_code (Bin, &Code);
 

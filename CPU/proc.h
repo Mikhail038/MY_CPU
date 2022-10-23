@@ -18,6 +18,7 @@ typedef struct
     int            ip;
     int            size;
     int            size_RAM;
+    int            size_VRAM;
     EModes         mode;
     StructStack*   stack;
     StructStack*   addres_stack;

@@ -1,6 +1,7 @@
 #ifndef ASM_H
 #define ASM_H
 
+#include "functions.h"
 #include "stack.h"
 #include "config.h"
 #include "colors.h"
@@ -33,9 +34,9 @@ typedef struct
 typedef struct
 {
     int            ip;
-    unsigned char* ArrCode;
     unsigned char  signature;
     unsigned char  version;
+    unsigned char* ArrCode;
     int            vram_size_x;
     int            vram_size_y;
     int            size;
@@ -58,6 +59,11 @@ const StructCommands ArrCommands[AmntCommands] =
 #undef DEF_CMD
 
 //======================================================================
+
+int check_passport (FILE* Bin, int* Size, int* VramSize);
+
+//======================================================================
+
 
 int count_lines_in_file (FILE* stream);
 

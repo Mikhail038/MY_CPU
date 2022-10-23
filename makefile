@@ -6,7 +6,7 @@ DOP = -Wall -Wextra -Weffc++ -Waggressive-loop-optimizations -Wc++14-compat -Wmi
 
 CXX_FLAGS += $(ASSAN)
 
-DIR_FLAGS = -IASM -ICPU -IDISASM -ISTACK
+DIR_FLAGS = -IASM -ICPU -IDISASM -ISTACK -IEXTRA
 
 CXX_FLAGS += $(DIR_FLAGS)
 
@@ -20,8 +20,8 @@ all: DO
 
 DO: DO_ASM DO_PROC DO_DISASM
 
-DO_PROC: OBJECTS/m_proc.o OBJECTS/proc.o OBJECTS/disasm.o OBJECTS/stack.o
-	g++ OBJECTS/m_proc.o OBJECTS/proc.o OBJECTS/disasm.o OBJECTS/stack.o -o proc $(CXX_FLAGS)
+DO_PROC: OBJECTS/m_proc.o OBJECTS/proc.o OBJECTS/disasm.o OBJECTS/stack.o OBJECTS/functions.o
+	g++ OBJECTS/m_proc.o OBJECTS/proc.o OBJECTS/disasm.o OBJECTS/stack.o OBJECTS/functions.o -o BUILD/proc $(CXX_FLAGS)
 
 OBJECTS/m_proc.o: CPU/m_proc.cpp
 	g++ -c -o OBJECTS/m_proc.o CPU/m_proc.cpp $(CXX_FLAGS)
@@ -35,9 +35,12 @@ OBJECTS/stack.o: STACK/stack.cpp
 	g++ -c -o OBJECTS/stack.o STACK/stack.cpp $(CXX_FLAGS)
 
 
+OBJECTS/functions.o: EXTRA/functions.cpp
+	g++ -c -o OBJECTS/functions.o EXTRA/functions.cpp $(CXX_FLAGS)
+
 
 DO_ASM: OBJECTS/m_asm.o OBJECTS/asm.o OBJECTS/stack.o
-	g++ OBJECTS/m_asm.o OBJECTS/asm.o OBJECTS/stack.o -o asm $(CXX_FLAGS)
+	g++ OBJECTS/m_asm.o OBJECTS/asm.o OBJECTS/stack.o -o BUILD/asm $(CXX_FLAGS)
 
 OBJECTS/m_asm.o: ASM/m_asm.cpp
 	g++ -c -o OBJECTS/m_asm.o ASM/m_asm.cpp $(CXX_FLAGS)
@@ -47,13 +50,13 @@ OBJECTS/asm.o: ASM/asm.cpp
 
 
 
-DO_DISASM: OBJECTS/m_disasm.o OBJECTS/disasm.o OBJECTS/stack.o
-	g++ OBJECTS/m_disasm.o OBJECTS/disasm.o OBJECTS/stack.o -o disasm $(CXX_FLAGS)
+DO_DISASM: OBJECTS/m_disasm.o OBJECTS/disasm.o OBJECTS/stack.o OBJECTS/functions.o
+	g++ OBJECTS/m_disasm.o OBJECTS/disasm.o OBJECTS/stack.o OBJECTS/functions.o -o BUILD/disasm $(CXX_FLAGS)
 
 OBJECTS/m_disasm.o: DISASM/m_disasm.cpp
 	g++ -c -o OBJECTS/m_disasm.o DISASM/m_disasm.cpp $(CXX_FLAGS)
 
-OBJECTS/disasm.o: DISASM/disasm.cpp
+OBJECTS/disasm.o: DISASM/disasm.cpp OBJECTS/functions.o
 	g++ -c -o OBJECTS/disasm.o DISASM/disasm.cpp $(CXX_FLAGS)
 
 

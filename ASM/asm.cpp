@@ -168,8 +168,8 @@ void make_array_of_code (int Amnt_lines, StructSource* Source, StructMachineCode
     }
     //printf ("%d %d\n", LineNum, Source->amnt_lines);
 
-    Code->signature = 218;
-    Code->version   = 1;
+    Code->signature = StdSign;
+    Code->version   = StdVersion;
     Code->size      = Code->ip;
 
     fprintf (Code->listing_file,"---------------------------------------------------------------\n"
@@ -667,12 +667,6 @@ void make_bin_file (FILE* Bin, StructMachineCode* Code)
     free_labels (Code);
 
     close_listing_file (Code);
-
-    // unsigned char Sgn     = 218;
-    // unsigned char Version = 1;
-    // unsigned char Amount  = Code->ip;
-
-    //printf ("%0.2X %0.2X %0.2X\n", Sgn, Version, Amount);
 
     int size = Code->vram_size_x * Code->vram_size_y;
 

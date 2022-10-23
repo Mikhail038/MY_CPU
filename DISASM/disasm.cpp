@@ -22,33 +22,6 @@ int read_array_of_code (FILE* Bin, StructMachineCode* Code)
     return 0;
 }
 
-int check_passport (FILE* Bin, StructMachineCode* Code) // TODO copypaste
-{
-    MCA (Bin  != NULL, StdError);
-    MCA (Code != NULL, StdError);
-
-    int vram_size = 0;
-
-    fread (&Code->signature, 1, sizeof (Code->signature), Bin);
-    fread (&Code->version,   1, sizeof (Code->version),   Bin);
-    fread (&Code->size,      1, sizeof (Code->size),      Bin);
-    fread (&vram_size,       1, sizeof (vram_size),       Bin);
-
-
-    if (Code->signature != StdSign)
-    {
-        printf ("Wrong sygnature!\n");
-        return StdError;
-    }
-    if (Code->version != StdVersion)
-    {
-        printf ("Wrong version!\n");
-        return StdError;
-    }
-
-    return 0;
-}
-
 int make_text_from_code (StructDisasm* Array, StructMachineCode* Code)
 {
     Array->pointer = 0;

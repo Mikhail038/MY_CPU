@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "functions.h"
 #include "proc.h"
 #include "disasm.h"
 
@@ -14,7 +15,6 @@ static int start = 100;
 
 static int width = 0;
 static int height = 0;
-static int vram_size = 0;
 
 StructDisasm* Array;
 StructMachineCode* Code;
@@ -175,12 +175,12 @@ void do_dump (StructCPU* CPU)
 
 int cpu_constructor (FILE* Bin, StructCPU* CPU)
 {
-    check_passport (Bin, CPU);
+    check_passport (Bin, &(CPU->size), &(CPU->size_VRAM));
 
     read_array_of_code (Bin, CPU);
 
     CPU->Regs = (double*) calloc (REGS_CONST, sizeof (*CPU->RAM));
-    CPU->size_RAM = start + vram_size;
+    CPU->size_RAM = start + CPU->size_VRAM;
     CPU->RAM  = (double*) calloc (CPU->size_RAM, sizeof (*CPU->RAM));
 
     CPU->stack = (StructStack*) calloc (1, sizeof (StructStack));
@@ -250,16 +250,13 @@ int cpu_constructor (FILE* Bin, StructCPU* CPU)
     return 0;
 }
 
-
-int check_passport (FILE* Bin, StructCPU* CPU) // TODO move to "binary-read-write" lib
+/*
+int check_passport (FILE* Bin, StructCPU* CPU)
 {
-    MCA (Bin  != NULL, -1);
-    MCA (CPU != NULL, -2);
+    MCA (Bin != NULL, StdError);
+    MCA (CPU != NULL, StdError);
 
-    unsigned char sygnature = 0;
-    unsigned char version = 0;
-
-    fread (&sygnature, 1, sizeof (sygnature), Bin);
+    fread (&signature, 1, sizeof (signature), Bin);
     fread (&version,   1, sizeof (version),   Bin);
     fread (&CPU->size, 1, sizeof (CPU->size), Bin);
     fread (&vram_size, 1, sizeof (vram_size), Bin);
@@ -267,12 +264,12 @@ int check_passport (FILE* Bin, StructCPU* CPU) // TODO move to "binary-read-writ
     MCA (CPU->size > 0, 1);
     MCA (vram_size >= 0, 2);
 
-    if (sygnature != 218)
+    if (signature != StdSign)
     {
         printf ("Wrong sygnature!\n");
         exit (0);
     }
-    if (version != 1)
+    if (version != StdVersion)
     {
         printf ("Wrong version!\n");
         exit (0);
@@ -283,7 +280,7 @@ int check_passport (FILE* Bin, StructCPU* CPU) // TODO move to "binary-read-writ
 
     return 0;
 }
-
+*/
 int read_array_of_code (FILE* Bin, StructCPU* CPU)
 {
     MCA (Bin  != NULL, StdError);

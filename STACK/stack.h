@@ -2,6 +2,7 @@
 #define STACK_H
 
 #include <stdio.h>
+#include "MYassert.h"
 
 //---------------------------------------------------------------------------------------
 // 1   - error
@@ -32,7 +33,7 @@
 
 #define LOCATION __FILE__,__PRETTY_FUNCTION__,__LINE__
 
-#define DOTXT(Message) #Message
+
 
 #define DOTXT_1(Message) #Message+1
 
@@ -58,24 +59,6 @@
 #define END
 
 #endif
-
-#define MCP(Message)                                                                                       \
-        do                                                                                                 \
-        {                                                                                                  \
-            fprintf (stderr, "FAILED CHECK|| " DOTXT (Message)                                              \
-            " ||IN FUNCTION %s IN LINE %d IN FILE %s\n",                                             \
-             __PRETTY_FUNCTION__, __LINE__, __FILE__);                                                     \
-        } while (0)
-
-#define MCA(Condition, ReturnNum)                     \
-        do                                            \
-        {                                             \
-            if (!(Condition))                         \
-            {                                         \
-                MCP (Condition);                      \
-                return ReturnNum;                     \
-            }                                         \
-        } while (0)
 
 #define MSA(Condition, ReturnNum)                     \
         do                                            \

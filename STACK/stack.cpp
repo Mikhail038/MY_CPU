@@ -29,7 +29,7 @@ enum EErrors
 typedef struct
 {
     EErrors  num;
-    char name[60]; //TODO read about svariable array
+    char name[60];
 } StructError;
 
 static const StructError ArrStructErr[64] =
@@ -208,7 +208,7 @@ int check_data_hash (StructStack* stack)
 
     if (old_hash == stack->hash_data)
     {
-        if (PROTECTION_LEVEL > 3) fprintf (stderr, "1 '%u' '%u'\n", old_hash, stack->hash_data); // TODO add global FILE* logfile;
+        if (PROTECTION_LEVEL > 3) fprintf (stderr, "1 '%u' '%u'\n", old_hash, stack->hash_data);
 
         END;
 
@@ -227,8 +227,6 @@ int check_stack_hash (StructStack* stack)
     BGN;
 
     stack->data = (CanaryType*) stack->data -  1/**/;
-
-    //TODO VitualQuery prava pamyati
 
     unsigned int old_hash =  stack->hash;
 
